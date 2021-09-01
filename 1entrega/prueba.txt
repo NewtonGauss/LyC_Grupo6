@@ -1,0 +1,65 @@
+*/ comentario /*
+
+*/ declaracion de variables /*
+var [ c ] as [ real ]
+var [ str, entero, flotante ] as [ string, int, real ]
+var [str2] as [string]
+
+*/ asignacion de entero /*
+entero = 12
+
+*/ asignacion de real /*
+flotante = 12.
+c = .5
+c = 12.5
+
+*/ asignacion de cadenas /*
+str = ""
+str2 = "Hello, World!"
+
+*/ operaciones /*
+entero = entero + 1
+entero = entero - 1
+entero = entero * 2
+entero = entero / 2
+
+*/ selecciones /*
+if entero == 1 {
+	*/ impresion de entero /*
+	print entero
+}
+
+if entero != 1 {
+	*/ impresion de float /*
+	print flotante
+}
+
+if entero <= 1 && entero >= 0 {
+	*/ impresion de cadena /*
+	print str2
+}
+
+if entero != 1 || entero <= 0 {
+	*/ impresion de operacion /*
+	print entero + 1
+}
+
+*/ ciclo while /*
+while entero != 0 {
+	*/ get obtiene entrada de stdin /*
+	get entero
+
+	*/ con seleccion anidada /*
+	if !(entero == 1) {
+		print "no elegiste 1"
+	}
+}
+
+entero = 1
+
+*/ ciclos anidados /*
+while entero != 0 {
+	while entero != 0 {
+		get entero
+	}
+}
