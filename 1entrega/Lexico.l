@@ -1,3 +1,11 @@
+%{
+#include <stdlib.h>
+#include <errno.h>
+
+char *str_dup(const char * const str);
+void errtok(const char * const msg);
+%}
+
 /* patrones */
 DIGIT [0-9]
 LETRA [[:alpha:]]
@@ -59,7 +67,8 @@ REAL     real
 STRING_T string
 
 /* fin de instruccion */
-END_STMT ;|\n
+END_STMT ;
+NL \n
 
 /* IO */
 GET   get
@@ -72,9 +81,42 @@ WHITE [ \t]+
 
 {COMMENT} /* discard */
 
-{CONST_INT} {printf("CONST_INT");}
-{CONST_R} {printf("CONST_R");}
-{STR} {printf("STR");}
+{CONST_INT} {
+						char *yydup = str_dup(yytext), *ret;
+
+						errno = 0;
+						long num = strtol(yydup, &ret, 10);
+
+						if ( errno != 0 || (num > 32767 || num < -32768) )
+							{
+							errtok("entero fuera de rango");
+							}
+
+						free(yydup);
+						printf("CONST_INT");
+						}
+{CONST_R} {
+					char *yydup = str_dup(yytext), *ret;
+
+					errno = 0;
+					float num = strtof(yydup, &ret);
+
+					if ( errno != 0 )
+					{
+						errtok("real fuera de rango");
+					}
+
+					free(yydup);
+					printf("CONST_R");
+					}
+{STR} {
+			if ( strlen(yytext) > 30 )
+				{
+				errtok("string mayor a 30 caracteres");
+				}
+
+			printf("STR");
+			}
 
 {SUM} {printf("SUM");}
 {MIN} {printf("MIN");}
@@ -105,6 +147,10 @@ WHITE [ \t]+
 {STRING_T} {printf("STRING_T");}
 
 {END_STMT} ECHO;
+{NL} {
+			yylineno++;
+			ECHO;
+		 }
 
 {GET}   {printf("GET");}
 {PRINT} {printf("PRINT");}
@@ -118,8 +164,26 @@ WHITE [ \t]+
 {PR_CRR} {printf("PR_CRR");}
 
 {WHITE} ECHO;
+. {errtok("desconocido");}
 
 %%
+
+char *str_dup(const char * const str)
+{
+	char *new_str = malloc(strlen(str) + 1);
+	if ( new_str == NULL ) {
+		fprintf(stderr, "No hay espacio suficiente para compilar\n");
+		exit(1);
+	}
+
+	strcpy(new_str, str);
+	return new_str;
+}
+
+void errtok(const char * const msg)
+{
+	fprintf(stderr, "Token invalido en la linea %d: %s\n", yylineno, msg);
+}
 
 /* codigo C */
 int main()
