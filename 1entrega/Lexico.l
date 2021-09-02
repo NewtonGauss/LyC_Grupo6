@@ -51,6 +51,7 @@ OR  \|\|
 
 /* flow control */
 IF    if
+ELSE  else
 WHILE while
 
 /* asignacion */
@@ -134,6 +135,7 @@ WHITE [ \t]+
 {OR}  {printf("OR");}
 
 {IF}    {printf("IF");}
+{ELSE}  {printf("ELSE");}
 {WHILE} {printf("WHILE");}
 
 {ASIGN} {printf("ASIGN");}

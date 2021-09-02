@@ -28,16 +28,25 @@ entero = entero + 1*2 - 4/2
 if entero == 1 {
 	*/ impresion de entero /*
 	print entero
+} else {
+	print "distinto de 1"
 }
 
 if entero != 1 {
 	*/ impresion de float /*
 	print flotante
 }
+else {
+	print "igual a 1"
+}
 
 if entero <= 1 && entero >= 0 {
 	*/ impresion de cadena /*
 	print str2
+}
+
+else {
+	print "Mayor a 1 o Menor a 0"
 }
 
 if entero < 1 || entero > 0 {
