@@ -1,3 +1,7 @@
 output.txt
 lex.yy.c
 lexer
+lex.out
+parser
+y.tab.h
+y.tab.c

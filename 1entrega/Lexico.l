@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "y.tab.h"
+
 char *str_dup(const char * const str);
 void errtok(const char * const msg);
+
+extern FILE *lexout;
 %}
 
 /* patrones */
@@ -94,7 +98,7 @@ WHITE [ \t]+
 							}
 
 						free(yydup);
-						printf("CONST_INT");
+						fprintf(lexout, "CONST_INT");
 						}
 {CONST_R} {
 					char *yydup = str_dup(yytext), *ret;
@@ -108,7 +112,7 @@ WHITE [ \t]+
 					}
 
 					free(yydup);
-					printf("CONST_R");
+					fprintf(lexout, "CONST_R");
 					}
 {STR} {
 			if ( strlen(yytext) > 30 )
@@ -116,56 +120,56 @@ WHITE [ \t]+
 				errtok("string mayor a 30 caracteres");
 				}
 
-			printf("STR");
+			fprintf(lexout, "STR");
 			}
 
-{SUM} {printf("SUM");}
-{MIN} {printf("MIN");}
-{DIV} {printf("DIV");}
-{MULT} {printf("MULT");}
+{SUM} {fprintf(lexout, "SUM");}
+{MIN} {fprintf(lexout, "MIN");}
+{DIV} {fprintf(lexout, "DIV");}
+{MULT} {fprintf(lexout, "MULT");}
 
-{EQ}  {printf("EQ");}
-{NEQ} {printf("NEQ");}
-{LT}  {printf("LT");}
-{LEQ} {printf("LEQ");}
-{GT}  {printf("GT");}
-{GEQ} {printf("GEQ");}
-{NOT} {printf("NOT");}
-{AND} {printf("AND");}
-{OR}  {printf("OR");}
+{EQ}  {fprintf(lexout, "EQ");}
+{NEQ} {fprintf(lexout, "NEQ");}
+{LT}  {fprintf(lexout, "LT");}
+{LEQ} {fprintf(lexout, "LEQ");}
+{GT}  {fprintf(lexout, "GT");}
+{GEQ} {fprintf(lexout, "GEQ");}
+{NOT} {fprintf(lexout, "NOT");}
+{AND} {fprintf(lexout, "AND");}
+{OR}  {fprintf(lexout, "OR");}
 
-{IF}    {printf("IF");}
-{ELSE}  {printf("ELSE");}
-{WHILE} {printf("WHILE");}
+{IF}    {fprintf(lexout, "IF");}
+{ELSE}  {fprintf(lexout, "ELSE");}
+{WHILE} {fprintf(lexout, "WHILE");}
 
-{ASIGN} {printf("ASIGN");}
+{ASIGN} {fprintf(lexout, "ASIGN");}
 
-{VAR}  {printf("VAR");}
-{AS}   {printf("AS");}
-{COMA} {printf("COMA");}
+{VAR}  {fprintf(lexout, "VAR"); return VAR;}
+{AS}   {fprintf(lexout, "AS"); return AS;}
+{COMA} {fprintf(lexout, "COMA");}
 
-{INT}      {printf("INT");}
-{REAL}     {printf("REAL");}
-{STRING_T} {printf("STRING_T");}
+{INT}      {fprintf(lexout, "INT");}
+{REAL}     {fprintf(lexout, "REAL"); return REAL;}
+{STRING_T} {fprintf(lexout, "STRING_T");}
 
-{END_STMT} ECHO;
+{END_STMT} fprintf(lexout, "%s", yytext);
 {NL} {
 			yylineno++;
-			ECHO;
+			fprintf(lexout, "%s", yytext);
 		 }
 
-{GET}   {printf("GET");}
-{PRINT} {printf("PRINT");}
+{GET}   {fprintf(lexout, "GET");}
+{PRINT} {fprintf(lexout, "PRINT");}
 
-{ID} {printf("ID");}
-{LL_ABR} {printf("LL_ABR");}
-{LL_CRR} {printf("LL_CRR");}
-{CR_ABR} {printf("CR_ABR");}
-{CR_CRR} {printf("CR_CRR");}
-{PR_ABR} {printf("PR_ABR");}
-{PR_CRR} {printf("PR_CRR");}
+{ID} {fprintf(lexout, "ID"); return ID;}
+{LL_ABR} {fprintf(lexout, "LL_ABR");}
+{LL_CRR} {fprintf(lexout, "LL_CRR");}
+{CR_ABR} {fprintf(lexout, "CR_ABR"); return CR_ABR;}
+{CR_CRR} {fprintf(lexout, "CR_CRR"); return CR_CRR;}
+{PR_ABR} {fprintf(lexout, "PR_ABR");}
+{PR_CRR} {fprintf(lexout, "PR_CRR");}
 
-{WHITE} ECHO;
+{WHITE} fprintf(lexout, "%s", yytext);
 . {errtok("desconocido");}
 
 %%
@@ -188,7 +192,7 @@ void errtok(const char * const msg)
 }
 
 /* codigo C */
-int main()
-{
-	yylex();
-}
+//int main()
+//{
+//	yylex();
+//}

@@ -73,3 +73,4 @@ while entero != 0 {
 		get entero
 	}
 }
+
