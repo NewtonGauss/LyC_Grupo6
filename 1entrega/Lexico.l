@@ -94,11 +94,14 @@ WHITE [ \t]+
 
 						if ( errno != 0 || (num > 32767 || num < -32768) )
 							{
+							// TODO: return error?
 							errtok("entero fuera de rango");
 							}
 
 						free(yydup);
 						fprintf(lexout, "CONST_INT");
+
+						return CONST_INT;
 						}
 {CONST_R} {
 					char *yydup = str_dup(yytext), *ret;
@@ -108,69 +111,76 @@ WHITE [ \t]+
 
 					if ( errno != 0 )
 					{
+						// TODO: return error?
 						errtok("real fuera de rango");
 					}
 
 					free(yydup);
 					fprintf(lexout, "CONST_R");
+
+					return CONST_R;
 					}
 {STR} {
 			if ( strlen(yytext) > 30 )
 				{
+				// TODO: return error?
 				errtok("string mayor a 30 caracteres");
 				}
 
 			fprintf(lexout, "STR");
+			return STR;
 			}
 
-{SUM} {fprintf(lexout, "SUM");}
-{MIN} {fprintf(lexout, "MIN");}
-{DIV} {fprintf(lexout, "DIV");}
-{MULT} {fprintf(lexout, "MULT");}
+{SUM} {fprintf(lexout, "SUM"); return SUM;}
+{MIN} {fprintf(lexout, "MIN"); return MIN;}
+{DIV} {fprintf(lexout, "DIV"); return DIV;}
+{MULT} {fprintf(lexout, "MULT"); return MULT;}
 
-{EQ}  {fprintf(lexout, "EQ");}
-{NEQ} {fprintf(lexout, "NEQ");}
-{LT}  {fprintf(lexout, "LT");}
-{LEQ} {fprintf(lexout, "LEQ");}
-{GT}  {fprintf(lexout, "GT");}
-{GEQ} {fprintf(lexout, "GEQ");}
-{NOT} {fprintf(lexout, "NOT");}
-{AND} {fprintf(lexout, "AND");}
-{OR}  {fprintf(lexout, "OR");}
+{EQ}  {fprintf(lexout, "EQ"); return EQ;}
+{NEQ} {fprintf(lexout, "NEQ"); return NEQ;}
+{LT}  {fprintf(lexout, "LT"); return LT;}
+{LEQ} {fprintf(lexout, "LEQ"); return LEQ;}
+{GT}  {fprintf(lexout, "GT"); return GT;}
+{GEQ} {fprintf(lexout, "GEQ"); return GEQ;}
+{NOT} {fprintf(lexout, "NOT"); return NOT;}
+{AND} {fprintf(lexout, "AND"); return AND;}
+{OR}  {fprintf(lexout, "OR"); return OR;}
 
-{IF}    {fprintf(lexout, "IF");}
-{ELSE}  {fprintf(lexout, "ELSE");}
-{WHILE} {fprintf(lexout, "WHILE");}
+{IF}    {fprintf(lexout, "IF"); return IF;}
+{ELSE}  {fprintf(lexout, "ELSE"); return ELSE;}
+{WHILE} {fprintf(lexout, "WHILE"); return WHILE;}
 
-{ASIGN} {fprintf(lexout, "ASIGN");}
+{ASIGN} {fprintf(lexout, "ASIGN"); return ASIGN;}
 
 {VAR}  {fprintf(lexout, "VAR"); return VAR;}
 {AS}   {fprintf(lexout, "AS"); return AS;}
-{COMA} {fprintf(lexout, "COMA");}
+{COMA} {fprintf(lexout, "COMA"); return COMA;}
 
-{INT}      {fprintf(lexout, "INT");}
+{INT}      {fprintf(lexout, "INT"); return INT;}
 {REAL}     {fprintf(lexout, "REAL"); return REAL;}
-{STRING_T} {fprintf(lexout, "STRING_T");}
+{STRING_T} {fprintf(lexout, "STRING_T"); return STRING_T;}
 
-{END_STMT} fprintf(lexout, "%s", yytext);
+{END_STMT} {fprintf(lexout, "%s", yytext); return END_STMT;}
 {NL} {
 			yylineno++;
 			fprintf(lexout, "%s", yytext);
+
+			return NL;
 		 }
 
-{GET}   {fprintf(lexout, "GET");}
-{PRINT} {fprintf(lexout, "PRINT");}
+{GET}   {fprintf(lexout, "GET"); return GET;}
+{PRINT} {fprintf(lexout, "PRINT"); return PRINT;}
 
 {ID} {fprintf(lexout, "ID"); return ID;}
-{LL_ABR} {fprintf(lexout, "LL_ABR");}
-{LL_CRR} {fprintf(lexout, "LL_CRR");}
+{LL_ABR} {fprintf(lexout, "LL_ABR"); return LL_ABR;}
+{LL_CRR} {fprintf(lexout, "LL_CRR"); return LL_CRR;}
 {CR_ABR} {fprintf(lexout, "CR_ABR"); return CR_ABR;}
 {CR_CRR} {fprintf(lexout, "CR_CRR"); return CR_CRR;}
-{PR_ABR} {fprintf(lexout, "PR_ABR");}
-{PR_CRR} {fprintf(lexout, "PR_CRR");}
+{PR_ABR} {fprintf(lexout, "PR_ABR"); return PR_ABR;}
+{PR_CRR} {fprintf(lexout, "PR_CRR"); return PR_CRR;}
 
-{WHITE} fprintf(lexout, "%s", yytext);
-. {errtok("desconocido");}
+{WHITE} fprintf(lexout, "%s", yytext); /* me como el texto, lo imprimo en out, pero no lo mando al sintactico */
+. {errtok("desconocido"); /*TODO: return error ?*/}
 
 %%
 
@@ -191,8 +201,3 @@ void errtok(const char * const msg)
 	fprintf(stderr, "Token invalido en la linea %d: %s\n", yylineno, msg);
 }
 
-/* codigo C */
-//int main()
-//{
-//	yylex();
-//}
