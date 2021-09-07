@@ -70,15 +70,43 @@ FILE *lexout;
 %%
 
 prg: /* nada */
-	 | prg sents /* un programa y una lista de sentencias */
+	 | prg bloq /* un programa y una lista de sentencias */
 	 ;
 
-sents: sent
-		 | sents sent
+bloq: /* nada */
+		| bloq flowcontr
+		| bloq sent
+		;
+
+flowcontr: IF conds LL_ABR bloq LL_CRR ELSE LL_ABR bloq LL_CRR {printf("IF CON ELSE ");}
+				 | IF conds LL_ABR bloq LL_CRR {printf("IF SIMPLE ");}
+				 | WHILE conds LL_ABR bloq LL_CRR {printf("WHILE ");}
+				 ;
+
+conds: cond {printf("Condicion ");}
+		 | conds unionlog cond {printf("Condicion multiple ");}
+		 ;
+
+unionlog: AND {printf("AND ");}
+				| OR  {printf("OR ");}
+				;
+
+cond: NOT cond {printf("Negacion de condicion ");}
+		| PR_ABR cond PR_CRR
+		| operando oplog operando
+		;
+
+oplog: EQ {printf("EQ ");}
+		 | NEQ {printf("NEQ ");}
+		 | LT {printf("LT ");}
+		 | LEQ {printf("LEQ ");}
+		 | GT {printf("GT ");}
+		 | GEQ {printf("GEQ ");}
 		 ;
 
 sent: decl endstmt
 		| assg endstmt
+		| iostmt endstmt
 		| endstmt
 		;
 
@@ -128,6 +156,16 @@ arth_opr: SUM {printf("SUM ");}
 				| MULT {printf("MULT ");}
 				| DIV {printf("DIV ");}
 				;
+
+/* =========================
+ * IO
+ * ========================= */
+
+iostmt: PRINT operando {printf("PRINT ");}
+			| GET ID {printf("GET ");}
+			;
+
+operando: expr | STR;
 
 %%
 /* end of grammar */

@@ -35,17 +35,14 @@ if entero == 1 {
 if entero != 1 {
 	*/ impresion de float /*
 	print flotante
-}
-else {
+} else {
 	print "igual a 1"
 }
 
 if entero <= 1 && entero >= 0 {
 	*/ impresion de cadena /*
 	print str2
-}
-
-else {
+} else {
 	print "Mayor a 1 o Menor a 0"
 }
 
@@ -60,7 +57,7 @@ while entero != 0 {
 	get entero
 
 	*/ con seleccion anidada /*
-	if !(entero == 1) {
+	if entero == 1 {
 		print "no elegiste 1"
 	}
 }
