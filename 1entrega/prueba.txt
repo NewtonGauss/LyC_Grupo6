@@ -71,3 +71,26 @@ while entero != 0 {
 	}
 }
 
+*/ Temas especiales /*
+*/ Longitud de lista /*
+entero = len(["hola", "que", "tal"]) */ 3 /*
+print len([c, flotante])
+
+*/ EQUMAX /*
+if eqmax(10, [10, 5, 2]) {
+	print "true"
+}
+
+if eqmax(5, [10, 5, 2]) {
+	print "no deberia entrar"
+}
+
+*/ EQUMIN /*
+if eqmin(2, [10, 5, 2]) {
+	print "true"
+}
+
+if eqmin(5, [10, 5, 2]) {
+	print "no deberia entrar"
+}
+

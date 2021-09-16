@@ -82,6 +82,14 @@ PRINT print
 /* otros */
 WHITE [ \t]+
 
+/* Temas especiales */
+/* Longitud de lista */
+LEN len
+
+/* EQUMAX y EQUMIN */
+EQUMAX eqmax
+EQUMIN eqmin
+
 %%
 
 {COMMENT} /* discard */
@@ -130,6 +138,10 @@ WHITE [ \t]+
 			fprintf(lexout, "STR");
 			return STR;
 			}
+
+{LEN} {fprintf(lexout, "LEN"); return LEN;}
+{EQUMAX} {fprintf(lexout, "EQUMAX"); return EQUMAX;}
+{EQUMIN} {fprintf(lexout, "EQUMIN"); return EQUMIN;}
 
 {SUM} {fprintf(lexout, "SUM"); return SUM;}
 {MIN} {fprintf(lexout, "MIN"); return MIN;}

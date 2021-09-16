@@ -63,17 +63,24 @@ FILE *lexout;
 %token GET
 %token PRINT
 
+%token LEN
+%token EQUMAX
+%token EQUMIN
+
+%right ASIGN /* assignment */
 %left  SUM MIN /* left associative, same precedence. a-b-c will be (a-b)-c */
 %left  MULT DIV /* left associative, higher precedence. */
-%right ASIGN /* assignment */
 
 %%
 
-prg: /* nada */
+prg_: prg;
+
+prg: bloq
 	 | prg bloq /* un programa y una lista de sentencias */
 	 ;
 
-bloq: /* nada */
+bloq: flowcontr
+		| sent
 		| bloq flowcontr
 		| bloq sent
 		;
@@ -94,6 +101,7 @@ unionlog: AND {printf("AND ");}
 cond: NOT cond {printf("Negacion de condicion ");}
 		| PR_ABR cond PR_CRR
 		| operando oplog operando
+		| eqcond
 		;
 
 oplog: EQ {printf("EQ ");}
@@ -104,6 +112,14 @@ oplog: EQ {printf("EQ ");}
 		 | GEQ {printf("GEQ ");}
 		 ;
 
+eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR
+			| eqop PR_ABR expr COMA lista_const PR_CRR
+		 ;
+
+eqop: EQUMIN {printf("EQUMIN ");}
+		| EQUMAX {printf("EQUMAX ");}
+		;
+
 sent: decl endstmt
 		| assg endstmt
 		| iostmt endstmt
@@ -112,8 +128,12 @@ sent: decl endstmt
 
 endstmt: END_STMT | NL {printf("\n");};
 
-decl: VAR CR_ABR ids CR_CRR AS CR_ABR tipos CR_CRR {printf("Declaracion de variables ");}
+decl: VAR lista_ids AS CR_ABR tipos CR_CRR {printf("Declaracion de variables ");}
 		;
+
+lista_ids: CR_ABR ids CR_CRR
+		 ;
+
 
 ids: ID
 	 | ids COMA ID
@@ -129,7 +149,7 @@ tipo: REAL | STRING_T | INT;
  * ASIGNACION
  * ========================= */
 
-assg: left ASIGN assg
+assg: left ASIGN assg {printf("Asignacion multiple ");}
 		| left ASIGN right {printf("Asignacion ");}
 		;
 
@@ -144,10 +164,17 @@ right: expr
  * ARITMETICA
  * ========================= */
 
-expr: expr arth_opr expr {printf("Operacion aritmetica ");}
-		| PR_ABR expr PR_CRR {printf("Expresion en parentesis ");}
+expr: expr arth_opr termino {printf("Operacion aritmetica ");}
+		| termino
+		;
+
+termino: PR_ABR expr PR_CRR {printf("Expresion en parentesis ");}
+		| llong     {printf("LONGITUD ");}
 		| ID        {printf("ID ");}
-		| CONST_R   {printf("CONST_R ");}
+		| const_num
+		;
+
+const_num: CONST_R   {printf("CONST_R ");}
 		| CONST_INT {printf("CONST_INT ");}
 		;
 
@@ -156,6 +183,19 @@ arth_opr: SUM {printf("SUM ");}
 				| MULT {printf("MULT ");}
 				| DIV {printf("DIV ");}
 				;
+
+llong: LEN PR_ABR lista_ids PR_CRR
+		 | LEN PR_ABR lista_const PR_CRR
+		 ;
+
+lista_const: CR_ABR constantes CR_CRR
+					 ;
+
+constantes: constante
+					| constantes COMA constante
+					;
+
+constante: const_num | STR;
 
 /* =========================
  * IO
