@@ -106,6 +106,7 @@ EQUMIN eqmin
 							errtok("entero fuera de rango");
 							}
 
+						strcpy(yylval.strval, yydup);
 						free(yydup);
 						fprintf(lexout, "CONST_INT");
 
@@ -123,6 +124,7 @@ EQUMIN eqmin
 						errtok("real fuera de rango");
 					}
 
+					strcpy(yylval.strval, yydup);
 					free(yydup);
 					fprintf(lexout, "CONST_R");
 
@@ -135,6 +137,7 @@ EQUMIN eqmin
 				errtok("string mayor a 30 caracteres");
 				}
 
+			strcpy(yylval.strval, yytext);
 			fprintf(lexout, "STR");
 			return STR;
 			}

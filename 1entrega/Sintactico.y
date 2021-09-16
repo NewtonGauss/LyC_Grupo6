@@ -1,6 +1,9 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include "symbol_table.h"
 
 #define VAL_SZ 255
 
@@ -9,6 +12,13 @@ int yylex();
 
 extern int yylineno;
 FILE *lexout;
+
+/* Tabla de simbolos */
+List sym_table;
+void AddInteger(const char *const val);
+void AddReal(const char *const val);
+void AddString(const char *const val);
+void AddId(const char *const val, DataType type);
 %}
 
 %union {
@@ -73,7 +83,7 @@ FILE *lexout;
 
 %%
 
-prg_: prg;
+prg_: prg {printf("Compilacion exitosa!\n");};
 
 prg: bloq
 	 | prg bloq /* un programa y una lista de sentencias */
@@ -157,8 +167,11 @@ left: ID
 		;
 
 right: expr
-		 | STR {printf("CONST_STR ");}
+		 | str_const
 		 ;
+
+str_const: STR {printf("CONST_STR "); AddString($1);}
+	 ;
 
 /* =========================
  * ARITMETICA
@@ -174,8 +187,8 @@ termino: PR_ABR expr PR_CRR {printf("Expresion en parentesis ");}
 		| const_num
 		;
 
-const_num: CONST_R   {printf("CONST_R ");}
-		| CONST_INT {printf("CONST_INT ");}
+const_num: CONST_R   {printf("CONST_R "); AddReal($1);}
+		| CONST_INT {printf("CONST_INT "); AddInteger($1);}
 		;
 
 arth_opr: SUM {printf("SUM ");}
@@ -195,7 +208,7 @@ constantes: constante
 					| constantes COMA constante
 					;
 
-constante: const_num | STR;
+constante: const_num | str_const;
 
 /* =========================
  * IO
@@ -205,16 +218,88 @@ iostmt: PRINT operando {printf("PRINT ");}
 			| GET ID {printf("GET ");}
 			;
 
-operando: expr | STR;
+operando: expr | str_const;
 
 %%
 /* end of grammar */
 
 int main(int argc, char *argv[]) {
+	sym_table = NewList();
+
 	lexout = fopen("lex.out", "wt");
 	yyparse();
+
+
+	FILE *tstxt = fopen("ts.txt", "wt");
+	fprintf(tstxt, "%40s%10s%40s%10s\n", "Nombre", "Tipo", "Valor", "Longitud");
+	ListIterator it = Iterator(&sym_table);
+	while ( HasNext(&it) ) {
+		Symbol sym = Next(&it);
+		char *type;
+		switch ( sym.type ) {
+		case TABLE_INT:
+			type = "Integer";
+			break;
+		case TABLE_REAL:
+			type = "Real";
+			break;
+		case TABLE_STRING:
+			type = "String";
+			break;
+		default:
+			fprintf(stderr, "Tipo de dato invalido");
+			exit(1);
+		}
+		fprintf(tstxt, "%40s%10s%40s%10d\n", sym.name, type, sym.value, sym.len);
+	}
 }
 
 void yyerror(char *s) {
 	fprintf(stderr, "%s near line %d\n", s, yylineno);
 }
+
+void doAddConstant(const char *const val, DataType type)
+{
+	Symbol s;
+	strcpy(s.name, "_");
+	strcat(s.name, val);
+	s.type = type;
+	strcpy(s.value, val);
+	s.len = 0;
+	AddSymbol(&sym_table, &s);
+}
+
+void AddInteger(const char *const val)
+{
+	doAddConstant(val, TABLE_INT);
+}
+
+
+void AddReal(const char *const val)
+{
+	doAddConstant(val, TABLE_REAL);
+}
+
+
+void AddString(const char *const val)
+{
+	char buf[SYM_NAME_SZ];
+	/* saco la primer comilla */
+	strcpy(buf, val+1);
+	/* saco la ultima comilla */
+	buf[strlen(buf)-1] = 0;
+
+	doAddConstant(buf, TABLE_STRING);
+}
+
+
+void AddId(const char *const val, DataType type)
+{
+	Symbol s;
+	strcpy(s.name, val);
+	s.value[0] = 0;
+	s.type = type;
+	s.len = 0;
+	AddSymbol(&sym_table, &s);
+}
+
