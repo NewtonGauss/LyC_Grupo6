@@ -1,5 +1,6 @@
 #include "symbol_table.h"
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 List NewList(void)
@@ -15,14 +16,19 @@ void AddSymbol(List *lst, const Symbol * const sym)
 	Node *new = malloc(sizeof(Node));
 	assert( new != NULL );
 
-	/* Recorro lista hasta el final */
-	while ( *lst != NULL ) {
+	int cmp = -1;
+	while ( *lst != NULL
+			&& ( cmp = strcmp((*lst)->sym.name, sym->name) ) < 0 ) {
 		lst = &((*lst)->next);
 	}
 
-	/* Agrego el simbolo al final de la lista */
+	/* ya esta en la lista */
+	if ( cmp == 0 )
+		return;
+
+	/* Agrego el simbolo en orden */
 	new->sym = *sym;
-	new->next = NULL;
+	new->next = *lst;
 	*lst = new;
 }
 

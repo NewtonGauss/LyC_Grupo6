@@ -18,7 +18,7 @@ List sym_table;
 void AddInteger(const char *const val);
 void AddReal(const char *const val);
 void AddString(const char *const val);
-void AddId(const char *const val, DataType type);
+void AddIds(const char *const ids, const char *const types);
 %}
 
 %union {
@@ -81,6 +81,9 @@ void AddId(const char *const val, DataType type);
 %left  SUM MIN /* left associative, same precedence. a-b-c will be (a-b)-c */
 %left  MULT DIV /* left associative, higher precedence. */
 
+/* Para poner ids y tipos en la tabla de simbolos */
+%type <strval> ids lista_ids tipo tipos
+
 %%
 
 prg_: prg {printf("Compilacion exitosa!\n");};
@@ -138,22 +141,22 @@ sent: decl endstmt
 
 endstmt: END_STMT | NL {printf("\n");};
 
-decl: VAR lista_ids AS CR_ABR tipos CR_CRR {printf("Declaracion de variables ");}
+decl: VAR lista_ids AS CR_ABR tipos CR_CRR {printf("Declaracion de variables "); AddIds($2, $5);}
 		;
 
-lista_ids: CR_ABR ids CR_CRR
+lista_ids: CR_ABR ids CR_CRR {strcpy($$, $2);}
 		 ;
 
 
-ids: ID
-	 | ids COMA ID
+ids: ID {strcpy($$, $1);}
+	 | ids COMA ID {strcpy($$, $1); strcat($$, ","); strcat($$, $3);}
 	 ;
 
-tipos: tipo
-		 | tipos COMA tipo
+tipos: tipo {strcpy($$, $1);}
+		 | tipos COMA tipo {strcpy($$, $1); strcat($$, ","); strcat($$, $3);}
 		 ;
 
-tipo: REAL | STRING_T | INT;
+tipo: REAL {strcpy($$, "real");} | STRING_T {strcpy($$, "string");} | INT {strcpy($$, "int");};
 
 /* =========================
  * ASIGNACION
@@ -230,6 +233,7 @@ int main(int argc, char *argv[]) {
 	yyparse();
 
 
+	/* Guardo la tabla */
 	FILE *tstxt = fopen("ts.txt", "wt");
 	fprintf(tstxt, "%40s%10s%40s%10s\n", "Nombre", "Tipo", "Valor", "Longitud");
 	ListIterator it = Iterator(&sym_table);
@@ -292,14 +296,48 @@ void AddString(const char *const val)
 	doAddConstant(buf, TABLE_STRING);
 }
 
-
-void AddId(const char *const val, DataType type)
+void addId(const char *id, DataType type)
 {
 	Symbol s;
-	strcpy(s.name, val);
-	s.value[0] = 0;
+	strcpy(s.name, id);
 	s.type = type;
+	strcpy(s.value, "");
 	s.len = 0;
 	AddSymbol(&sym_table, &s);
+}
+
+
+void AddIds(const char *const ids, const char *const types)
+{
+	const char *id_start = ids, *id_comma = ids;
+	const char *type_start = types, *type_comma = types;
+
+	while ( *id_start && *type_start ) {
+		while ( *id_comma && *id_comma != ',' )
+				id_comma++;
+		while ( *type_comma && *type_comma != ',' )
+				type_comma++;
+
+		char id[255];
+		strncpy(id, id_start, id_comma - id_start);
+		id[id_comma - id_start] = 0;
+		DataType type;
+		if (strncmp("real", type_start, type_comma - type_start) == 0) {
+			type = TABLE_REAL;
+		} else if ( strncmp("int", type_start, type_comma - type_start) == 0 ) {
+			type = TABLE_INT;
+		} else if ( strncmp("string", type_start, type_comma - type_start) == 0 ) {
+			type = TABLE_STRING;
+		}
+
+		addId(id, type);
+
+		/*
+		 * lo pongo en el principio del proximo id en caso de que no se haya
+		 * encontrado el \0
+		 */
+		id_start = id_comma = *id_comma != 0 ? id_comma + 1 : id_comma;
+		type_start = type_comma = *type_comma != 0 ? type_comma + 1 : type_comma;
+	}
 }
 

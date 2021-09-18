@@ -186,7 +186,7 @@ EQUMIN eqmin
 {GET}   {fprintf(lexout, "GET"); return GET;}
 {PRINT} {fprintf(lexout, "PRINT"); return PRINT;}
 
-{ID} {fprintf(lexout, "ID"); return ID;}
+{ID} {fprintf(lexout, "ID"); strcpy(yylval.strval, yytext); return ID;}
 {LL_ABR} {fprintf(lexout, "LL_ABR"); return LL_ABR;}
 {LL_CRR} {fprintf(lexout, "LL_CRR"); return LL_CRR;}
 {CR_ABR} {fprintf(lexout, "CR_ABR"); return CR_ABR;}
