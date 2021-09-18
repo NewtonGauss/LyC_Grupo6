@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <math.h>
 #include "symbol_table.h"
 
 #define VAL_SZ 255
 
-void yyerror(char *s);
-int yylex();
+void yyerror(char *s, ...);
+int yylex(void);
 
 extern int yylineno;
 FILE *lexout;
@@ -19,6 +20,8 @@ void AddInteger(const char *const val);
 void AddReal(const char *const val);
 void AddString(const char *const val);
 void AddIds(const char *const ids, const char *const types);
+Symbol *Lookup(const List *const lst, const char *const name);
+void CheckId(const char *const id);
 %}
 
 %union {
@@ -166,7 +169,7 @@ assg: left ASIGN assg {printf("Asignacion multiple ");}
 		| left ASIGN right {printf("Asignacion ");}
 		;
 
-left: ID
+left: ID {CheckId($1);}
 		;
 
 right: expr
@@ -186,7 +189,7 @@ expr: expr arth_opr termino {printf("Operacion aritmetica ");}
 
 termino: PR_ABR expr PR_CRR {printf("Expresion en parentesis ");}
 		| llong     {printf("LONGITUD ");}
-		| ID        {printf("ID ");}
+		| ID        {CheckId($1); printf("ID ");}
 		| const_num
 		;
 
@@ -218,7 +221,7 @@ constante: const_num | str_const;
  * ========================= */
 
 iostmt: PRINT operando {printf("PRINT ");}
-			| GET ID {printf("GET ");}
+			| GET ID {CheckId($2); printf("GET ");}
 			;
 
 operando: expr | str_const;
@@ -258,8 +261,32 @@ int main(int argc, char *argv[]) {
 	}
 }
 
-void yyerror(char *s) {
-	fprintf(stderr, "%s near line %d\n", s, yylineno);
+/**
+ * Crea un mensaje del tipo "Cerca de la linea x: ... \n". "..." con lo que se
+ * mande en fmt. Funciona como printf
+ */
+void yyerror(char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+
+	/* Creo el comienzo del mensaje */
+	char buf[4096];
+	snprintf(buf, 4096 - 1, "Cerca de la linea %d: ", yylineno);
+
+	/* le agrego el mensaje formateado */
+	const size_t len = strlen(buf);
+	vsnprintf(buf + len, 4096 - len - 1, fmt, ap);
+
+	/* un \n para que quede bien */
+	strcat(buf, "\n");
+
+	fflush(stdout); /* por si stdout es igual que stderr */
+
+	/* imprimo el mensaje de error */
+	fputs(buf, stderr);
+	fflush(NULL); /* hago flush de todos */
+
+	va_end(ap);
 }
 
 void doAddConstant(const char *const val, DataType type)
@@ -339,5 +366,48 @@ void AddIds(const char *const ids, const char *const types)
 		id_start = id_comma = *id_comma != 0 ? id_comma + 1 : id_comma;
 		type_start = type_comma = *type_comma != 0 ? type_comma + 1 : type_comma;
 	}
+
+	if ( *id_start && !*type_start ) {
+		yyerror("Error de declaracion: la cantidad de tipos de datos debe ser "
+			"igual a la cantidad de identificadores.");
+		exit(1);
+	}
+
+	if ( !*id_start && *type_start ) {
+		yyerror("Error de declaracion: la cantidad de identificadores debe ser "
+			"igual a la cantidad de tipos de datos.");
+		exit(1);
+	}
+}
+
+/**
+ * Verifica que un id se encuentre en la tabla de simbolos.
+ * Si no se encuentra, print de error y exit(1);
+ */
+void CheckId(const char *const id)
+{
+	if ( Lookup(&sym_table, id) == NULL ) { /* no se ha declarado */
+		yyerror("No se ha declarado la variable \"%s\"", id);
+		exit(1);
+	}
+}
+
+/**
+ * Realiza una busqueda en la lista por name del Symbol
+ * En caso de no encontrarlo, retorna NULL.
+ * El puntero retornado es una variable static, por lo tanto, no deberia ser
+ * utilizado luego de otra llamada a Lookup, dado que su valor puede cambiar.
+ */
+Symbol *Lookup(const List *const lst, const char *const name)
+{
+	ListIterator it = Iterator(lst);
+	while ( HasNext(&it) ) {
+		static Symbol s;
+		s = Next(&it);
+		if ( strcmp(s.name, name) == 0 )
+			return &s;
+	}
+
+	return NULL;
 }
 
