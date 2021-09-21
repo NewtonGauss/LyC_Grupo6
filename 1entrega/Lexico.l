@@ -1,6 +1,7 @@
 %{
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "y.tab.h"
 
@@ -9,6 +10,8 @@ void errtok(const char * const msg);
 
 extern FILE *lexout;
 %}
+%option noyywrap
+%option yylineno
 
 /* patrones */
 DIGIT [0-9]
