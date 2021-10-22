@@ -1,0 +1,96 @@
+*/ comentario /*
+
+*/ declaracion de variables /*
+var [ c ] as [ real ]
+var [ str, entero, flotante ] as [ string, int, real ]
+var [str2] as [string]
+
+*/ asignacion de entero /*
+entero = 12
+
+*/ asignacion de real /*
+flotante = 12.
+c = .5
+c = 12.5
+
+*/ asignacion de cadenas /*
+str = ""
+str2 = "Hello, World!"
+
+*/ operaciones /*
+entero = entero + 1
+entero = entero - 1
+entero = entero * 2
+entero = entero / 2
+entero = entero + 1*2 - 4/2
+
+*/ selecciones /*
+if entero == 1 {
+	*/ impresion de entero /*
+	print entero
+} else {
+	print "distinto de 1"
+}
+
+if entero != 1 {
+	*/ impresion de float /*
+	print flotante
+} else {
+	print "igual a 1"
+}
+
+if entero <= 1 && entero >= 0 {
+	*/ impresion de cadena /*
+	print str2
+} else {
+	print "Mayor a 1 o Menor a 0"
+}
+
+if entero < 1 || entero > 0 {
+	*/ impresion de operacion /*
+	print entero + 1
+}
+
+*/ ciclo while /*
+while entero != 0 {
+	*/ get obtiene entrada de stdin /*
+	get entero
+
+	*/ con seleccion anidada /*
+	if entero == 1 {
+		print "no elegiste 1"
+	}
+}
+
+entero = 1
+
+*/ ciclos anidados /*
+while entero != 0 {
+	while entero != 0 {
+		get entero
+	}
+}
+
+*/ Temas especiales /*
+*/ Longitud de lista /*
+entero = len(["hola", "que", "tal"]) */ 3 /*
+print len([c, flotante])
+
+*/ EQUMAX /*
+if eqmax(10, [10, 5, 2]) {
+	print "true"
+}
+
+if eqmax(5, [10, 5, 2]) {
+	print "no deberia entrar"
+}
+
+*/ EQUMIN /*
+if eqmin(2, [10, 5, 2]) {
+	print "true"
+}
+
+if eqmin(5, [10, 5, 2]) {
+	print "no deberia entrar"
+}
+
