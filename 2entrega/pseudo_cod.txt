@@ -1,0 +1,23 @@
+if entero != 1 {
+	...
+}
+
+cmp | entero | 1
+beq | [i] | ___
+
+if entero <= 1 && entero >= 0 {
+	...
+}
+
+es lo mismo que
+
+if entero <= 1 {
+	if entero >= 0 {
+		
+	}
+}
+
+cmp | entero  | 1
+bgr | [i]     | ___
+cmp | entero  | 0
+ble | [i]     | ___

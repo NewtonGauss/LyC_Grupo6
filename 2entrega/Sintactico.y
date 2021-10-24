@@ -6,6 +6,7 @@
 #include <math.h>
 #include "symbol_table.h"
 #include "tercetos.h"
+#include "stack.h"
 
 #define VAL_SZ 255
 #define ___ NewVoid()
@@ -33,6 +34,8 @@ TercEntry NewValue(const char *const value);
 TercEntry NewIndexRef(const int idx);
 TercEntry NewVoid(void);
 
+Stack stack;
+
 static int strConstIdx;
 static int rightIdx;
 static int exprIdx;
@@ -40,6 +43,9 @@ static int terminoIdx;
 static int factorIdx;
 static int constNumIdx;
 static int assgIdx;
+static int condIdx;
+static int primerOperandoIdx;
+static int operandoIdx;
 %}
 
 %union {
@@ -104,7 +110,7 @@ static int assgIdx;
 
 /* Para poner ids y tipos en la tabla de simbolos */
 %type <strval> ids lista_ids tipo tipos
-%type <strval> left
+%type <strval> left oplog
 
 %%
 
@@ -135,16 +141,30 @@ unionlog: AND {printf("AND ");}
 
 cond: NOT cond {printf("Negacion de condicion ");}
 		| PR_ABR cond PR_CRR
-		| operando oplog operando
+		| operando {primerOperandoIdx = operandoIdx;} oplog operando {
+				condIdx = AddTerceto(
+					terceto,
+					NewOperator("cmp"),
+					NewIndexRef(primerOperandoIdx),
+					NewIndexRef(operandoIdx)
+				);
+				const int i = AddTerceto(
+					terceto,
+					NewOperator($3),
+					___,
+					___
+				);
+				Push(&stack, i);
+			}
 		| eqcond
 		;
 
-oplog: EQ {printf("EQ ");}
-		 | NEQ {printf("NEQ ");}
-		 | LT {printf("LT ");}
-		 | LEQ {printf("LEQ ");}
-		 | GT {printf("GT ");}
-		 | GEQ {printf("GEQ ");}
+oplog: EQ  {printf("EQ ") ; strcpy($$, "BEQ");}
+		 | NEQ {printf("NEQ "); strcpy($$, "BNE");}
+		 | LT  {printf("LT ") ; strcpy($$, "BLT");}
+		 | LEQ {printf("LEQ "); strcpy($$, "BLE");}
+		 | GT  {printf("GT ") ; strcpy($$, "BGT");}
+		 | GEQ {printf("GEQ "); strcpy($$, "BGE");}
 		 ;
 
 eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR
@@ -312,7 +332,8 @@ iostmt: PRINT operando {printf("PRINT ");}
 			| GET ID {CheckId($2); printf("GET ");}
 			;
 
-operando: expr | str_const;
+operando: expr {operandoIdx = exprIdx;}
+				| str_const {operandoIdx = strConstIdx;};
 
 %%
 /* end of grammar */
@@ -321,6 +342,7 @@ int main(int argc, char *argv[]) {
 	sym_table = NewList();
 	terceto = NewTerceto();
 	tercetos = fopen("intermedio.txt", "wt");
+	InitStack(&stack);
 
 	lexout = fopen("lex.out", "wt");
 	yyparse();
