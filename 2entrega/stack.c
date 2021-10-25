@@ -12,8 +12,13 @@ void Push(Stack *s, const int d)
 
 int Pop(Stack *s)
 {
-	int popped = s->data[s->idx--];
+	int popped = s->data[--s->idx];
 
 	assert(s->idx >= 0);
 	return popped;
+}
+
+bool Stack_IsEmpty(const Stack * const s)
+{
+	return s->idx == 0;
 }

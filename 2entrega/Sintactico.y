@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <math.h>
 #include "symbol_table.h"
 #include "tercetos.h"
@@ -44,8 +45,13 @@ static int factorIdx;
 static int constNumIdx;
 static int assgIdx;
 static int condIdx;
+static int condsIdx;
 static int primerOperandoIdx;
 static int operandoIdx;
+
+char *OperadorContrario(const char *op);
+static char ultimoOperador[10]={0};
+static bool huboAnd = false;
 %}
 
 %union {
@@ -126,18 +132,118 @@ bloq: flowcontr
 		| bloq sent
 		;
 
-flowcontr: IF conds LL_ABR bloq LL_CRR ELSE LL_ABR bloq LL_CRR {printf("IF CON ELSE ");}
-				 | IF conds LL_ABR bloq LL_CRR {printf("IF SIMPLE ");}
-				 | WHILE conds LL_ABR bloq LL_CRR {printf("WHILE ");}
+flowcontr: IF conds LL_ABR bloq LL_CRR {
+					if ( !Stack_IsEmpty(&stack) ) {
+						const int branch = Pop(&stack);
+						FillVoid(terceto, branch, CurrentIndex());
+					}
+					if ( huboAnd ) {
+						if ( !Stack_IsEmpty(&stack) ) {
+							const int branch = Pop(&stack);
+							FillVoid(terceto, branch, CurrentIndex());
+							}
+						huboAnd = false;
+						}
+					const int i = AddTerceto(
+						terceto,
+						NewOperator("BRA"), /* branch always */
+						___,
+						___
+					);
+					Push(&stack, i);
+				 } ELSE LL_ABR bloq LL_CRR {
+					printf("IF CON ELSE ");
+					if ( !Stack_IsEmpty(&stack) ) {
+						const int branch = Pop(&stack);
+						FillVoid(terceto, branch, CurrentIndex());
+					}
+				 }
+				 | IF conds LL_ABR bloq LL_CRR {
+					printf("IF SIMPLE ");
+					if ( !Stack_IsEmpty(&stack) ) {
+						const int branch = Pop(&stack);
+						FillVoid(terceto, branch, CurrentIndex());
+					}
+					if ( huboAnd ) {
+						if ( !Stack_IsEmpty(&stack) ) {
+							const int branch = Pop(&stack);
+							FillVoid(terceto, branch, CurrentIndex());
+						}
+						huboAnd = false;
+						}
+					}
+				 | WHILE {
+					const int i = AddTerceto(terceto, NewOperator("ET"), ___, ___);
+					Push(&stack, i);
+					} conds LL_ABR bloq LL_CRR {
+					printf("WHILE ");
+					const int branchAfuera = Pop(&stack);
+					FillVoid(terceto, branchAfuera, CurrentIndex()+1);
+
+					const int branchHaciaWhile = Pop(&stack);
+					AddTerceto(
+						terceto,
+						NewOperator("BRA"),
+						NewIndexRef(branchHaciaWhile),
+						___
+					);
+					}
 				 ;
 
-conds: cond {printf("Condicion ");}
-		 | conds unionlog cond {printf("Condicion multiple ");}
-		 ;
+conds: cond {
+				printf("Condicion ");
+				condsIdx = condIdx;
+				const int i = AddTerceto(
+					terceto,
+					NewOperator(ultimoOperador),
+					___,
+					___
+				);
+				Push(&stack, i);
+				}
+		 | cond OR {
+				const int i = AddTerceto(
+					terceto,
+					NewOperator(OperadorContrario(ultimoOperador)),
+					___,
+					___);
+				Push(&stack, i);
+				} cond {
+				printf("Condicion multiple ");
+				const int branch = Pop(&stack);
+				/* estoy parado en el branch, +1 es donde sigue */
+				FillVoid(terceto, branch, CurrentIndex()+1);
 
-unionlog: AND {printf("AND ");}
-				| OR  {printf("OR ");}
-				;
+				/* branch */
+				const int i = AddTerceto(
+					terceto,
+					NewOperator(ultimoOperador),
+					___,
+					___
+				);
+				Push(&stack, i);
+				}
+		 | cond AND {
+				const int i = AddTerceto(
+					terceto,
+					NewOperator(ultimoOperador),
+					___,
+					___
+				);
+				Push(&stack, i);
+				} cond {
+				printf("Condicion multiple ");
+				huboAnd = true;
+				/* branch */
+				const int i = AddTerceto(
+					terceto,
+					NewOperator(ultimoOperador),
+					___,
+					___
+				);
+				Push(&stack, i);
+				}
+		 ;
 
 cond: NOT cond {printf("Negacion de condicion ");}
 		| PR_ABR cond PR_CRR
@@ -148,23 +254,17 @@ cond: NOT cond {printf("Negacion de condicion ");}
 					NewIndexRef(primerOperandoIdx),
 					NewIndexRef(operandoIdx)
 				);
-				const int i = AddTerceto(
-					terceto,
-					NewOperator($3),
-					___,
-					___
-				);
-				Push(&stack, i);
+				strcpy(ultimoOperador, $3);
 			}
 		| eqcond
 		;
 
-oplog: EQ  {printf("EQ ") ; strcpy($$, "BEQ");}
-		 | NEQ {printf("NEQ "); strcpy($$, "BNE");}
-		 | LT  {printf("LT ") ; strcpy($$, "BLT");}
-		 | LEQ {printf("LEQ "); strcpy($$, "BLE");}
-		 | GT  {printf("GT ") ; strcpy($$, "BGT");}
-		 | GEQ {printf("GEQ "); strcpy($$, "BGE");}
+oplog: EQ  {printf("EQ ") ; strcpy($$, "BNE"); /* paso el contrario */}
+		 | NEQ {printf("NEQ "); strcpy($$, "BEQ"); /* para facilitar el */}
+		 | LT  {printf("LT ") ; strcpy($$, "BGE"); /* branch de asm     */}
+		 | LEQ {printf("LEQ "); strcpy($$, "BGT");}
+		 | GT  {printf("GT ") ; strcpy($$, "BLE");}
+		 | GEQ {printf("GEQ "); strcpy($$, "BLT");}
 		 ;
 
 eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR
@@ -562,4 +662,27 @@ TercEntry NewVoid(void)
 		.data = NULL,
 		.type = TERC_VOID
 	};
+}
+
+char *OperadorContrario(const char *op)
+{
+	static char *ret;
+	if ( strcmp(op, "BNE") == 0 ) {
+		ret = "BEQ";
+	} else if ( strcmp(op, "BEQ") == 0 ) {
+		ret = "BNE";
+	} else if ( strcmp(op, "BGE") == 0 ) {
+		ret = "BLT";
+	} else if ( strcmp(op, "BGT") == 0 ) {
+		ret = "BLE";
+	} else if ( strcmp(op, "BLE") == 0 ) {
+		ret = "BGT";
+	} else if ( strcmp(op, "BLT") == 0 ) {
+		ret = "BGE";
+	} else {
+		yyerror("error, operador invalido: %s\n", op);
+		exit(1);
+	}
+
+	return ret;
 }

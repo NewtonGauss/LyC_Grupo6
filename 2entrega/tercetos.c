@@ -48,3 +48,5 @@ int AddTerceto(Terceto t, TercEntry e1, TercEntry e2, TercEntry e3)
 }
 
 void FillVoid(Terceto t, int idxToFill, int branchIdx) {}
+
+int CurrentIndex(void) { return _idx_terceto; }
