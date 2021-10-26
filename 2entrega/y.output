@@ -1,0 +1,1715 @@
+Estado 11 conflictos: 8 desplazamiento(s)/reducción(ones)
+Estado 46 conflictos: 8 desplazamiento(s)/reducción(ones)
+
+
+Gramática
+
+    0 $accept: prg_ $end
+
+    1 prg_: prg
+
+    2 prg: bloq
+    3    | prg bloq
+
+    4 bloq: flowcontr
+    5     | sent
+    6     | bloq flowcontr
+    7     | bloq sent
+
+    8 $@1: /* vacío */
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF conds LL_ABR bloq LL_CRR
+
+   11 $@2: /* vacío */
+
+   12 flowcontr: WHILE $@2 conds LL_ABR bloq LL_CRR
+
+   13 conds: cond
+
+   14 $@3: /* vacío */
+
+   15 conds: cond OR $@3 cond
+
+   16 $@4: /* vacío */
+
+   17 conds: cond $@4 AND cond
+
+   18 cond: NOT cond
+   19     | PR_ABR cond PR_CRR
+
+   20 $@5: /* vacío */
+
+   21 cond: operando $@5 oplog operando
+   22     | eqcond
+
+   23 oplog: EQ
+   24      | NEQ
+   25      | LT
+   26      | LEQ
+   27      | GT
+   28      | GEQ
+
+   29 eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR
+   30       | eqop PR_ABR expr COMA lista_const PR_CRR
+
+   31 eqop: EQUMIN
+   32     | EQUMAX
+
+   33 sent: decl endstmt
+   34     | assg endstmt
+   35     | iostmt endstmt
+   36     | endstmt
+
+   37 endstmt: END_STMT
+   38        | NL
+
+   39 decl: VAR lista_ids AS CR_ABR tipos CR_CRR
+
+   40 lista_ids: CR_ABR ids CR_CRR
+
+   41 ids: ID
+   42    | ids COMA ID
+
+   43 tipos: tipo
+   44      | tipos COMA tipo
+
+   45 tipo: REAL
+   46     | STRING_T
+   47     | INT
+
+   48 assg: left ASIGN assg
+   49     | left ASIGN right
+
+   50 left: ID
+
+   51 right: expr
+   52      | str_const
+
+   53 str_const: STR
+
+   54 expr: expr SUM termino
+   55     | expr MIN termino
+   56     | termino
+
+   57 termino: termino MULT factor
+   58        | termino DIV factor
+   59        | factor
+
+   60 factor: PR_ABR expr PR_CRR
+   61       | llong
+   62       | ID
+   63       | const_num
+
+   64 const_num: CONST_R
+   65          | CONST_INT
+
+   66 llong: LEN PR_ABR lista_ids PR_CRR
+   67      | LEN PR_ABR lista_const PR_CRR
+
+   68 lista_const: CR_ABR constantes CR_CRR
+
+   69 constantes: constante
+   70           | constantes COMA constante
+
+   71 constante: const_num
+   72          | str_const
+
+   73 iostmt: PRINT operando
+   74       | GET ID
+
+   75 operando: expr
+   76         | str_const
+
+
+Terminales con las reglas donde aparecen
+
+$end (0) 0
+error (256)
+ID (258) 41 42 50 62 74
+LL_ABR (259) 9 10 12
+LL_CRR (260) 9 10 12
+CR_ABR (261) 39 40 68
+CR_CRR (262) 39 40 68
+PR_ABR (263) 19 29 30 60 66 67
+PR_CRR (264) 19 29 30 60 66 67
+CONST_INT (265) 65
+CONST_R (266) 64
+STR (267) 53
+SUM (268) 54
+MIN (269) 55
+DIV (270) 58
+MULT (271) 57
+EQ (272) 23
+NEQ (273) 24
+LT (274) 25
+LEQ (275) 26
+GT (276) 27
+GEQ (277) 28
+NOT (278) 18
+AND (279) 17
+OR (280) 15
+IF (281) 9 10
+ELSE (282) 9
+WHILE (283) 12
+ASIGN (284) 48 49
+VAR (285) 39
+AS (286) 39
+COMA (287) 29 30 42 44 70
+INT (288) 47
+REAL (289) 45
+STRING_T (290) 46
+END_STMT (291) 37
+NL (292) 38
+GET (293) 74
+PRINT (294) 73
+LEN (295) 66 67
+EQUMAX (296) 32
+EQUMIN (297) 31
+
+
+No terminales con las reglas donde aparecen
+
+$accept (43)
+    en la izquierda: 0
+prg_ (44)
+    en la izquierda: 1, en la derecha: 0
+prg (45)
+    en la izquierda: 2 3, en la derecha: 1 3
+bloq (46)
+    en la izquierda: 4 5 6 7, en la derecha: 2 3 6 7 9 10 12
+flowcontr (47)
+    en la izquierda: 9 10 12, en la derecha: 4 6
+$@1 (48)
+    en la izquierda: 8, en la derecha: 9
+$@2 (49)
+    en la izquierda: 11, en la derecha: 12
+conds (50)
+    en la izquierda: 13 15 17, en la derecha: 9 10 12
+$@3 (51)
+    en la izquierda: 14, en la derecha: 15
+$@4 (52)
+    en la izquierda: 16, en la derecha: 17
+cond (53)
+    en la izquierda: 18 19 21 22, en la derecha: 13 15 17 18 19
+$@5 (54)
+    en la izquierda: 20, en la derecha: 21
+oplog (55)
+    en la izquierda: 23 24 25 26 27 28, en la derecha: 21
+eqcond (56)
+    en la izquierda: 29 30, en la derecha: 22
+eqop (57)
+    en la izquierda: 31 32, en la derecha: 29 30
+sent (58)
+    en la izquierda: 33 34 35 36, en la derecha: 5 7
+endstmt (59)
+    en la izquierda: 37 38, en la derecha: 33 34 35 36
+decl (60)
+    en la izquierda: 39, en la derecha: 33
+lista_ids (61)
+    en la izquierda: 40, en la derecha: 29 39 66
+ids (62)
+    en la izquierda: 41 42, en la derecha: 40 42
+tipos (63)
+    en la izquierda: 43 44, en la derecha: 39 44
+tipo (64)
+    en la izquierda: 45 46 47, en la derecha: 43 44
+assg (65)
+    en la izquierda: 48 49, en la derecha: 34 48
+left (66)
+    en la izquierda: 50, en la derecha: 48 49
+right (67)
+    en la izquierda: 51 52, en la derecha: 49
+str_const (68)
+    en la izquierda: 53, en la derecha: 52 72 76
+expr (69)
+    en la izquierda: 54 55 56, en la derecha: 29 30 51 54 55 60 75
+termino (70)
+    en la izquierda: 57 58 59, en la derecha: 54 55 56 57 58
+factor (71)
+    en la izquierda: 60 61 62 63, en la derecha: 57 58 59
+const_num (72)
+    en la izquierda: 64 65, en la derecha: 63 71
+llong (73)
+    en la izquierda: 66 67, en la derecha: 61
+lista_const (74)
+    en la izquierda: 68, en la derecha: 30 67
+constantes (75)
+    en la izquierda: 69 70, en la derecha: 68 70
+constante (76)
+    en la izquierda: 71 72, en la derecha: 69 70
+iostmt (77)
+    en la izquierda: 73 74, en la derecha: 35
+operando (78)
+    en la izquierda: 75 76, en la derecha: 21 73
+
+
+estado 0
+
+    0 $accept: . prg_ $end
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    prg_       ir al estado 9
+    prg        ir al estado 10
+    bloq       ir al estado 11
+    flowcontr  ir al estado 12
+    sent       ir al estado 13
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 1
+
+   50 left: ID .
+
+    $default  reduce usando la regla 50 (left)
+
+
+estado 2
+
+    9 flowcontr: IF . conds LL_ABR bloq LL_CRR $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF . conds LL_ABR bloq LL_CRR
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    conds      ir al estado 28
+    cond       ir al estado 29
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 3
+
+   12 flowcontr: WHILE . $@2 conds LL_ABR bloq LL_CRR
+
+    $default  reduce usando la regla 11 ($@2)
+
+    $@2  ir al estado 39
+
+
+estado 4
+
+   39 decl: VAR . lista_ids AS CR_ABR tipos CR_CRR
+
+    CR_ABR  desplazar e ir al estado 40
+
+    lista_ids  ir al estado 41
+
+
+estado 5
+
+   37 endstmt: END_STMT .
+
+    $default  reduce usando la regla 37 (endstmt)
+
+
+estado 6
+
+   38 endstmt: NL .
+
+    $default  reduce usando la regla 38 (endstmt)
+
+
+estado 7
+
+   74 iostmt: GET . ID
+
+    ID  desplazar e ir al estado 42
+
+
+estado 8
+
+   73 iostmt: PRINT . operando
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    LEN        desplazar e ir al estado 25
+
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 44
+
+
+estado 9
+
+    0 $accept: prg_ . $end
+
+    $end  desplazar e ir al estado 45
+
+
+estado 10
+
+    1 prg_: prg .
+    3 prg: prg . bloq
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    $default  reduce usando la regla 1 (prg_)
+
+    bloq       ir al estado 46
+    flowcontr  ir al estado 12
+    sent       ir al estado 13
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 11
+
+    2 prg: bloq .
+    6 bloq: bloq . flowcontr
+    7     | bloq . sent
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    ID        [reduce usando la regla 2 (prg)]
+    IF        [reduce usando la regla 2 (prg)]
+    WHILE     [reduce usando la regla 2 (prg)]
+    VAR       [reduce usando la regla 2 (prg)]
+    END_STMT  [reduce usando la regla 2 (prg)]
+    NL        [reduce usando la regla 2 (prg)]
+    GET       [reduce usando la regla 2 (prg)]
+    PRINT     [reduce usando la regla 2 (prg)]
+    $default  reduce usando la regla 2 (prg)
+
+    flowcontr  ir al estado 47
+    sent       ir al estado 48
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 12
+
+    4 bloq: flowcontr .
+
+    $default  reduce usando la regla 4 (bloq)
+
+
+estado 13
+
+    5 bloq: sent .
+
+    $default  reduce usando la regla 5 (bloq)
+
+
+estado 14
+
+   36 sent: endstmt .
+
+    $default  reduce usando la regla 36 (sent)
+
+
+estado 15
+
+   33 sent: decl . endstmt
+
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+
+    endstmt  ir al estado 49
+
+
+estado 16
+
+   34 sent: assg . endstmt
+
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+
+    endstmt  ir al estado 50
+
+
+estado 17
+
+   48 assg: left . ASIGN assg
+   49     | left . ASIGN right
+
+    ASIGN  desplazar e ir al estado 51
+
+
+estado 18
+
+   35 sent: iostmt . endstmt
+
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+
+    endstmt  ir al estado 52
+
+
+estado 19
+
+   62 factor: ID .
+
+    $default  reduce usando la regla 62 (factor)
+
+
+estado 20
+
+   19 cond: PR_ABR . cond PR_CRR
+   60 factor: PR_ABR . expr PR_CRR
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    cond       ir al estado 53
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 54
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 21
+
+   65 const_num: CONST_INT .
+
+    $default  reduce usando la regla 65 (const_num)
+
+
+estado 22
+
+   64 const_num: CONST_R .
+
+    $default  reduce usando la regla 64 (const_num)
+
+
+estado 23
+
+   53 str_const: STR .
+
+    $default  reduce usando la regla 53 (str_const)
+
+
+estado 24
+
+   18 cond: NOT . cond
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    cond       ir al estado 55
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 25
+
+   66 llong: LEN . PR_ABR lista_ids PR_CRR
+   67      | LEN . PR_ABR lista_const PR_CRR
+
+    PR_ABR  desplazar e ir al estado 56
+
+
+estado 26
+
+   32 eqop: EQUMAX .
+
+    $default  reduce usando la regla 32 (eqop)
+
+
+estado 27
+
+   31 eqop: EQUMIN .
+
+    $default  reduce usando la regla 31 (eqop)
+
+
+estado 28
+
+    9 flowcontr: IF conds . LL_ABR bloq LL_CRR $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF conds . LL_ABR bloq LL_CRR
+
+    LL_ABR  desplazar e ir al estado 57
+
+
+estado 29
+
+   13 conds: cond .
+   15      | cond . OR $@3 cond
+   17      | cond . $@4 AND cond
+
+    OR  desplazar e ir al estado 58
+
+    AND       reduce usando la regla 16 ($@4)
+    $default  reduce usando la regla 13 (conds)
+
+    $@4  ir al estado 59
+
+
+estado 30
+
+   22 cond: eqcond .
+
+    $default  reduce usando la regla 22 (cond)
+
+
+estado 31
+
+   29 eqcond: eqop . PR_ABR expr COMA lista_ids PR_CRR
+   30       | eqop . PR_ABR expr COMA lista_const PR_CRR
+
+    PR_ABR  desplazar e ir al estado 60
+
+
+estado 32
+
+   76 operando: str_const .
+
+    $default  reduce usando la regla 76 (operando)
+
+
+estado 33
+
+   54 expr: expr . SUM termino
+   55     | expr . MIN termino
+   75 operando: expr .
+
+    SUM  desplazar e ir al estado 61
+    MIN  desplazar e ir al estado 62
+
+    $default  reduce usando la regla 75 (operando)
+
+
+estado 34
+
+   56 expr: termino .
+   57 termino: termino . MULT factor
+   58        | termino . DIV factor
+
+    DIV   desplazar e ir al estado 63
+    MULT  desplazar e ir al estado 64
+
+    $default  reduce usando la regla 56 (expr)
+
+
+estado 35
+
+   59 termino: factor .
+
+    $default  reduce usando la regla 59 (termino)
+
+
+estado 36
+
+   63 factor: const_num .
+
+    $default  reduce usando la regla 63 (factor)
+
+
+estado 37
+
+   61 factor: llong .
+
+    $default  reduce usando la regla 61 (factor)
+
+
+estado 38
+
+   21 cond: operando . $@5 oplog operando
+
+    $default  reduce usando la regla 20 ($@5)
+
+    $@5  ir al estado 65
+
+
+estado 39
+
+   12 flowcontr: WHILE $@2 . conds LL_ABR bloq LL_CRR
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    conds      ir al estado 66
+    cond       ir al estado 29
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 40
+
+   40 lista_ids: CR_ABR . ids CR_CRR
+
+    ID  desplazar e ir al estado 67
+
+    ids  ir al estado 68
+
+
+estado 41
+
+   39 decl: VAR lista_ids . AS CR_ABR tipos CR_CRR
+
+    AS  desplazar e ir al estado 69
+
+
+estado 42
+
+   74 iostmt: GET ID .
+
+    $default  reduce usando la regla 74 (iostmt)
+
+
+estado 43
+
+   60 factor: PR_ABR . expr PR_CRR
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    expr       ir al estado 70
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 44
+
+   73 iostmt: PRINT operando .
+
+    $default  reduce usando la regla 73 (iostmt)
+
+
+estado 45
+
+    0 $accept: prg_ $end .
+
+    $default  aceptar
+
+
+estado 46
+
+    3 prg: prg bloq .
+    6 bloq: bloq . flowcontr
+    7     | bloq . sent
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    ID        [reduce usando la regla 3 (prg)]
+    IF        [reduce usando la regla 3 (prg)]
+    WHILE     [reduce usando la regla 3 (prg)]
+    VAR       [reduce usando la regla 3 (prg)]
+    END_STMT  [reduce usando la regla 3 (prg)]
+    NL        [reduce usando la regla 3 (prg)]
+    GET       [reduce usando la regla 3 (prg)]
+    PRINT     [reduce usando la regla 3 (prg)]
+    $default  reduce usando la regla 3 (prg)
+
+    flowcontr  ir al estado 47
+    sent       ir al estado 48
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 47
+
+    6 bloq: bloq flowcontr .
+
+    $default  reduce usando la regla 6 (bloq)
+
+
+estado 48
+
+    7 bloq: bloq sent .
+
+    $default  reduce usando la regla 7 (bloq)
+
+
+estado 49
+
+   33 sent: decl endstmt .
+
+    $default  reduce usando la regla 33 (sent)
+
+
+estado 50
+
+   34 sent: assg endstmt .
+
+    $default  reduce usando la regla 34 (sent)
+
+
+estado 51
+
+   48 assg: left ASIGN . assg
+   49     | left ASIGN . right
+
+    ID         desplazar e ir al estado 71
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    LEN        desplazar e ir al estado 25
+
+    assg       ir al estado 72
+    left       ir al estado 17
+    right      ir al estado 73
+    str_const  ir al estado 74
+    expr       ir al estado 75
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 52
+
+   35 sent: iostmt endstmt .
+
+    $default  reduce usando la regla 35 (sent)
+
+
+estado 53
+
+   19 cond: PR_ABR cond . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 76
+
+
+estado 54
+
+   54 expr: expr . SUM termino
+   55     | expr . MIN termino
+   60 factor: PR_ABR expr . PR_CRR
+   75 operando: expr .
+
+    PR_CRR  desplazar e ir al estado 77
+    SUM     desplazar e ir al estado 61
+    MIN     desplazar e ir al estado 62
+
+    $default  reduce usando la regla 75 (operando)
+
+
+estado 55
+
+   18 cond: NOT cond .
+
+    $default  reduce usando la regla 18 (cond)
+
+
+estado 56
+
+   66 llong: LEN PR_ABR . lista_ids PR_CRR
+   67      | LEN PR_ABR . lista_const PR_CRR
+
+    CR_ABR  desplazar e ir al estado 78
+
+    lista_ids    ir al estado 79
+    lista_const  ir al estado 80
+
+
+estado 57
+
+    9 flowcontr: IF conds LL_ABR . bloq LL_CRR $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF conds LL_ABR . bloq LL_CRR
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    bloq       ir al estado 81
+    flowcontr  ir al estado 12
+    sent       ir al estado 13
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 58
+
+   15 conds: cond OR . $@3 cond
+
+    $default  reduce usando la regla 14 ($@3)
+
+    $@3  ir al estado 82
+
+
+estado 59
+
+   17 conds: cond $@4 . AND cond
+
+    AND  desplazar e ir al estado 83
+
+
+estado 60
+
+   29 eqcond: eqop PR_ABR . expr COMA lista_ids PR_CRR
+   30       | eqop PR_ABR . expr COMA lista_const PR_CRR
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    expr       ir al estado 84
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 61
+
+   54 expr: expr SUM . termino
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    termino    ir al estado 85
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 62
+
+   55 expr: expr MIN . termino
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    termino    ir al estado 86
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 63
+
+   58 termino: termino DIV . factor
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    factor     ir al estado 87
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 64
+
+   57 termino: termino MULT . factor
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    LEN        desplazar e ir al estado 25
+
+    factor     ir al estado 88
+    const_num  ir al estado 36
+    llong      ir al estado 37
+
+
+estado 65
+
+   21 cond: operando $@5 . oplog operando
+
+    EQ   desplazar e ir al estado 89
+    NEQ  desplazar e ir al estado 90
+    LT   desplazar e ir al estado 91
+    LEQ  desplazar e ir al estado 92
+    GT   desplazar e ir al estado 93
+    GEQ  desplazar e ir al estado 94
+
+    oplog  ir al estado 95
+
+
+estado 66
+
+   12 flowcontr: WHILE $@2 conds . LL_ABR bloq LL_CRR
+
+    LL_ABR  desplazar e ir al estado 96
+
+
+estado 67
+
+   41 ids: ID .
+
+    $default  reduce usando la regla 41 (ids)
+
+
+estado 68
+
+   40 lista_ids: CR_ABR ids . CR_CRR
+   42 ids: ids . COMA ID
+
+    CR_CRR  desplazar e ir al estado 97
+    COMA    desplazar e ir al estado 98
+
+
+estado 69
+
+   39 decl: VAR lista_ids AS . CR_ABR tipos CR_CRR
+
+    CR_ABR  desplazar e ir al estado 99
+
+
+estado 70
+
+   54 expr: expr . SUM termino
+   55     | expr . MIN termino
+   60 factor: PR_ABR expr . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 77
+    SUM     desplazar e ir al estado 61
+    MIN     desplazar e ir al estado 62
+
+
+estado 71
+
+   50 left: ID .
+   62 factor: ID .
+
+    ASIGN     reduce usando la regla 50 (left)
+    $default  reduce usando la regla 62 (factor)
+
+
+estado 72
+
+   48 assg: left ASIGN assg .
+
+    $default  reduce usando la regla 48 (assg)
+
+
+estado 73
+
+   49 assg: left ASIGN right .
+
+    $default  reduce usando la regla 49 (assg)
+
+
+estado 74
+
+   52 right: str_const .
+
+    $default  reduce usando la regla 52 (right)
+
+
+estado 75
+
+   51 right: expr .
+   54 expr: expr . SUM termino
+   55     | expr . MIN termino
+
+    SUM  desplazar e ir al estado 61
+    MIN  desplazar e ir al estado 62
+
+    $default  reduce usando la regla 51 (right)
+
+
+estado 76
+
+   19 cond: PR_ABR cond PR_CRR .
+
+    $default  reduce usando la regla 19 (cond)
+
+
+estado 77
+
+   60 factor: PR_ABR expr PR_CRR .
+
+    $default  reduce usando la regla 60 (factor)
+
+
+estado 78
+
+   40 lista_ids: CR_ABR . ids CR_CRR
+   68 lista_const: CR_ABR . constantes CR_CRR
+
+    ID         desplazar e ir al estado 67
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+
+    ids         ir al estado 68
+    str_const   ir al estado 100
+    const_num   ir al estado 101
+    constantes  ir al estado 102
+    constante   ir al estado 103
+
+
+estado 79
+
+   66 llong: LEN PR_ABR lista_ids . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 104
+
+
+estado 80
+
+   67 llong: LEN PR_ABR lista_const . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 105
+
+
+estado 81
+
+    6 bloq: bloq . flowcontr
+    7     | bloq . sent
+    9 flowcontr: IF conds LL_ABR bloq . LL_CRR $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF conds LL_ABR bloq . LL_CRR
+
+    ID        desplazar e ir al estado 1
+    LL_CRR    desplazar e ir al estado 106
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    flowcontr  ir al estado 47
+    sent       ir al estado 48
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 82
+
+   15 conds: cond OR $@3 . cond
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    cond       ir al estado 107
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 83
+
+   17 conds: cond $@4 AND . cond
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 20
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    NOT        desplazar e ir al estado 24
+    LEN        desplazar e ir al estado 25
+    EQUMAX     desplazar e ir al estado 26
+    EQUMIN     desplazar e ir al estado 27
+
+    cond       ir al estado 108
+    eqcond     ir al estado 30
+    eqop       ir al estado 31
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 38
+
+
+estado 84
+
+   29 eqcond: eqop PR_ABR expr . COMA lista_ids PR_CRR
+   30       | eqop PR_ABR expr . COMA lista_const PR_CRR
+   54 expr: expr . SUM termino
+   55     | expr . MIN termino
+
+    SUM   desplazar e ir al estado 61
+    MIN   desplazar e ir al estado 62
+    COMA  desplazar e ir al estado 109
+
+
+estado 85
+
+   54 expr: expr SUM termino .
+   57 termino: termino . MULT factor
+   58        | termino . DIV factor
+
+    DIV   desplazar e ir al estado 63
+    MULT  desplazar e ir al estado 64
+
+    $default  reduce usando la regla 54 (expr)
+
+
+estado 86
+
+   55 expr: expr MIN termino .
+   57 termino: termino . MULT factor
+   58        | termino . DIV factor
+
+    DIV   desplazar e ir al estado 63
+    MULT  desplazar e ir al estado 64
+
+    $default  reduce usando la regla 55 (expr)
+
+
+estado 87
+
+   58 termino: termino DIV factor .
+
+    $default  reduce usando la regla 58 (termino)
+
+
+estado 88
+
+   57 termino: termino MULT factor .
+
+    $default  reduce usando la regla 57 (termino)
+
+
+estado 89
+
+   23 oplog: EQ .
+
+    $default  reduce usando la regla 23 (oplog)
+
+
+estado 90
+
+   24 oplog: NEQ .
+
+    $default  reduce usando la regla 24 (oplog)
+
+
+estado 91
+
+   25 oplog: LT .
+
+    $default  reduce usando la regla 25 (oplog)
+
+
+estado 92
+
+   26 oplog: LEQ .
+
+    $default  reduce usando la regla 26 (oplog)
+
+
+estado 93
+
+   27 oplog: GT .
+
+    $default  reduce usando la regla 27 (oplog)
+
+
+estado 94
+
+   28 oplog: GEQ .
+
+    $default  reduce usando la regla 28 (oplog)
+
+
+estado 95
+
+   21 cond: operando $@5 oplog . operando
+
+    ID         desplazar e ir al estado 19
+    PR_ABR     desplazar e ir al estado 43
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+    LEN        desplazar e ir al estado 25
+
+    str_const  ir al estado 32
+    expr       ir al estado 33
+    termino    ir al estado 34
+    factor     ir al estado 35
+    const_num  ir al estado 36
+    llong      ir al estado 37
+    operando   ir al estado 110
+
+
+estado 96
+
+   12 flowcontr: WHILE $@2 conds LL_ABR . bloq LL_CRR
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    bloq       ir al estado 111
+    flowcontr  ir al estado 12
+    sent       ir al estado 13
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 97
+
+   40 lista_ids: CR_ABR ids CR_CRR .
+
+    $default  reduce usando la regla 40 (lista_ids)
+
+
+estado 98
+
+   42 ids: ids COMA . ID
+
+    ID  desplazar e ir al estado 112
+
+
+estado 99
+
+   39 decl: VAR lista_ids AS CR_ABR . tipos CR_CRR
+
+    INT       desplazar e ir al estado 113
+    REAL      desplazar e ir al estado 114
+    STRING_T  desplazar e ir al estado 115
+
+    tipos  ir al estado 116
+    tipo   ir al estado 117
+
+
+estado 100
+
+   72 constante: str_const .
+
+    $default  reduce usando la regla 72 (constante)
+
+
+estado 101
+
+   71 constante: const_num .
+
+    $default  reduce usando la regla 71 (constante)
+
+
+estado 102
+
+   68 lista_const: CR_ABR constantes . CR_CRR
+   70 constantes: constantes . COMA constante
+
+    CR_CRR  desplazar e ir al estado 118
+    COMA    desplazar e ir al estado 119
+
+
+estado 103
+
+   69 constantes: constante .
+
+    $default  reduce usando la regla 69 (constantes)
+
+
+estado 104
+
+   66 llong: LEN PR_ABR lista_ids PR_CRR .
+
+    $default  reduce usando la regla 66 (llong)
+
+
+estado 105
+
+   67 llong: LEN PR_ABR lista_const PR_CRR .
+
+    $default  reduce usando la regla 67 (llong)
+
+
+estado 106
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR . $@1 ELSE LL_ABR bloq LL_CRR
+   10          | IF conds LL_ABR bloq LL_CRR .
+
+    ELSE      reduce usando la regla 8 ($@1)
+    $default  reduce usando la regla 10 (flowcontr)
+
+    $@1  ir al estado 120
+
+
+estado 107
+
+   15 conds: cond OR $@3 cond .
+
+    $default  reduce usando la regla 15 (conds)
+
+
+estado 108
+
+   17 conds: cond $@4 AND cond .
+
+    $default  reduce usando la regla 17 (conds)
+
+
+estado 109
+
+   29 eqcond: eqop PR_ABR expr COMA . lista_ids PR_CRR
+   30       | eqop PR_ABR expr COMA . lista_const PR_CRR
+
+    CR_ABR  desplazar e ir al estado 78
+
+    lista_ids    ir al estado 121
+    lista_const  ir al estado 122
+
+
+estado 110
+
+   21 cond: operando $@5 oplog operando .
+
+    $default  reduce usando la regla 21 (cond)
+
+
+estado 111
+
+    6 bloq: bloq . flowcontr
+    7     | bloq . sent
+   12 flowcontr: WHILE $@2 conds LL_ABR bloq . LL_CRR
+
+    ID        desplazar e ir al estado 1
+    LL_CRR    desplazar e ir al estado 123
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    flowcontr  ir al estado 47
+    sent       ir al estado 48
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 112
+
+   42 ids: ids COMA ID .
+
+    $default  reduce usando la regla 42 (ids)
+
+
+estado 113
+
+   47 tipo: INT .
+
+    $default  reduce usando la regla 47 (tipo)
+
+
+estado 114
+
+   45 tipo: REAL .
+
+    $default  reduce usando la regla 45 (tipo)
+
+
+estado 115
+
+   46 tipo: STRING_T .
+
+    $default  reduce usando la regla 46 (tipo)
+
+
+estado 116
+
+   39 decl: VAR lista_ids AS CR_ABR tipos . CR_CRR
+   44 tipos: tipos . COMA tipo
+
+    CR_CRR  desplazar e ir al estado 124
+    COMA    desplazar e ir al estado 125
+
+
+estado 117
+
+   43 tipos: tipo .
+
+    $default  reduce usando la regla 43 (tipos)
+
+
+estado 118
+
+   68 lista_const: CR_ABR constantes CR_CRR .
+
+    $default  reduce usando la regla 68 (lista_const)
+
+
+estado 119
+
+   70 constantes: constantes COMA . constante
+
+    CONST_INT  desplazar e ir al estado 21
+    CONST_R    desplazar e ir al estado 22
+    STR        desplazar e ir al estado 23
+
+    str_const  ir al estado 100
+    const_num  ir al estado 101
+    constante  ir al estado 126
+
+
+estado 120
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 . ELSE LL_ABR bloq LL_CRR
+
+    ELSE  desplazar e ir al estado 127
+
+
+estado 121
+
+   29 eqcond: eqop PR_ABR expr COMA lista_ids . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 128
+
+
+estado 122
+
+   30 eqcond: eqop PR_ABR expr COMA lista_const . PR_CRR
+
+    PR_CRR  desplazar e ir al estado 129
+
+
+estado 123
+
+   12 flowcontr: WHILE $@2 conds LL_ABR bloq LL_CRR .
+
+    $default  reduce usando la regla 12 (flowcontr)
+
+
+estado 124
+
+   39 decl: VAR lista_ids AS CR_ABR tipos CR_CRR .
+
+    $default  reduce usando la regla 39 (decl)
+
+
+estado 125
+
+   44 tipos: tipos COMA . tipo
+
+    INT       desplazar e ir al estado 113
+    REAL      desplazar e ir al estado 114
+    STRING_T  desplazar e ir al estado 115
+
+    tipo  ir al estado 130
+
+
+estado 126
+
+   70 constantes: constantes COMA constante .
+
+    $default  reduce usando la regla 70 (constantes)
+
+
+estado 127
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 ELSE . LL_ABR bloq LL_CRR
+
+    LL_ABR  desplazar e ir al estado 131
+
+
+estado 128
+
+   29 eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR .
+
+    $default  reduce usando la regla 29 (eqcond)
+
+
+estado 129
+
+   30 eqcond: eqop PR_ABR expr COMA lista_const PR_CRR .
+
+    $default  reduce usando la regla 30 (eqcond)
+
+
+estado 130
+
+   44 tipos: tipos COMA tipo .
+
+    $default  reduce usando la regla 44 (tipos)
+
+
+estado 131
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 ELSE LL_ABR . bloq LL_CRR
+
+    ID        desplazar e ir al estado 1
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    bloq       ir al estado 132
+    flowcontr  ir al estado 12
+    sent       ir al estado 13
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 132
+
+    6 bloq: bloq . flowcontr
+    7     | bloq . sent
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 ELSE LL_ABR bloq . LL_CRR
+
+    ID        desplazar e ir al estado 1
+    LL_CRR    desplazar e ir al estado 133
+    IF        desplazar e ir al estado 2
+    WHILE     desplazar e ir al estado 3
+    VAR       desplazar e ir al estado 4
+    END_STMT  desplazar e ir al estado 5
+    NL        desplazar e ir al estado 6
+    GET       desplazar e ir al estado 7
+    PRINT     desplazar e ir al estado 8
+
+    flowcontr  ir al estado 47
+    sent       ir al estado 48
+    endstmt    ir al estado 14
+    decl       ir al estado 15
+    assg       ir al estado 16
+    left       ir al estado 17
+    iostmt     ir al estado 18
+
+
+estado 133
+
+    9 flowcontr: IF conds LL_ABR bloq LL_CRR $@1 ELSE LL_ABR bloq LL_CRR .
+
+    $default  reduce usando la regla 9 (flowcontr)
