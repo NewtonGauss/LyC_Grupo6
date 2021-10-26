@@ -37,6 +37,10 @@ TercEntry NewVoid(void);
 
 Stack stack;
 
+/* Para EQUMAX y EQUMIN */
+Stack eqStack;
+static bool isMax = false;
+
 static int strConstIdx;
 static int rightIdx;
 static int exprIdx;
@@ -45,13 +49,20 @@ static int factorIdx;
 static int constNumIdx;
 static int assgIdx;
 static int condIdx;
+static int eqCondIdx;
 static int condsIdx;
 static int primerOperandoIdx;
 static int operandoIdx;
+static int branchIdx;
+static int constIdx;
 
 char *OperadorContrario(const char *op);
+void RevertirBranch(Terceto t, int i, char *op);
 static char ultimoOperador[10]={0};
 static bool huboAnd = false;
+
+/* para LEN */
+static int szLista = 0;
 %}
 
 %union {
@@ -193,21 +204,22 @@ flowcontr: IF conds LL_ABR bloq LL_CRR {
 conds: cond {
 				printf("Condicion ");
 				condsIdx = condIdx;
-				const int i = AddTerceto(
+				branchIdx = AddTerceto(
 					terceto,
 					NewOperator(ultimoOperador),
 					___,
 					___
 				);
-				Push(&stack, i);
+				Push(&stack, branchIdx);
 				}
 		 | cond OR {
-				const int i = AddTerceto(
+				branchIdx = AddTerceto(
 					terceto,
 					NewOperator(OperadorContrario(ultimoOperador)),
 					___,
-					___);
-				Push(&stack, i);
+					___
+				);
+				Push(&stack, branchIdx);
 				} cond {
 				printf("Condicion multiple ");
 				const int branch = Pop(&stack);
@@ -223,15 +235,15 @@ conds: cond {
 				);
 				Push(&stack, i);
 				}
-		 | cond AND {
-				const int i = AddTerceto(
+		 | cond {
+				branchIdx = AddTerceto(
 					terceto,
 					NewOperator(ultimoOperador),
 					___,
 					___
 				);
-				Push(&stack, i);
-				} cond {
+				Push(&stack, branchIdx);
+		 } AND cond {
 				printf("Condicion multiple ");
 				huboAnd = true;
 				/* branch */
@@ -256,7 +268,15 @@ cond: NOT cond {printf("Negacion de condicion ");}
 				);
 				strcpy(ultimoOperador, $3);
 			}
-		| eqcond
+		| eqcond {
+			AddTerceto(
+				terceto,
+				NewOperator("cmp"),
+				NewValue("@minmax"),
+				NewIndexRef(exprIdx)
+			);
+			strcpy(ultimoOperador, "BNE");
+			}
 		;
 
 oplog: EQ  {printf("EQ ") ; strcpy($$, "BNE"); /* paso el contrario */}
@@ -267,12 +287,70 @@ oplog: EQ  {printf("EQ ") ; strcpy($$, "BNE"); /* paso el contrario */}
 		 | GEQ {printf("GEQ "); strcpy($$, "BLT");}
 		 ;
 
-eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR
-			| eqop PR_ABR expr COMA lista_const PR_CRR
+eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR {
+			int idIdx = Pop(&eqStack);
+			AddTerceto(
+				terceto,
+				NewValue("="),
+				NewValue("@minmax"),
+				NewIndexRef(idIdx)
+			);
+			while ( !Stack_IsEmpty(&eqStack) ) {
+				idIdx = Pop(&eqStack);
+				int idx = AddTerceto(
+					terceto,
+					NewOperator("cmp"),
+					NewValue("@minmax"),
+					NewIndexRef(idIdx)
+				);
+				AddTerceto(
+					terceto,
+					NewOperator(isMax ? "BLE" : "BGE"),
+					NewIndexRef(idx+3),
+					___
+				);
+				AddTerceto(
+					terceto,
+					NewOperator("="),
+					NewValue("@minmax"),
+					NewIndexRef(idIdx)
+				);
+				}
+			}
+			| eqop PR_ABR expr COMA lista_const PR_CRR {
+			int idIdx = Pop(&eqStack);
+			AddTerceto(
+				terceto,
+				NewValue("="),
+				NewValue("@min"),
+				NewIndexRef(idIdx)
+			);
+			while ( !Stack_IsEmpty(&eqStack) ) {
+				idIdx = Pop(&eqStack);
+				int idx = AddTerceto(
+					terceto,
+					NewOperator("cmp"),
+					NewValue("@min"),
+					NewIndexRef(idIdx)
+				);
+				AddTerceto(
+					terceto,
+					NewOperator(isMax ? "BLE" : "BGE"),
+					NewIndexRef(idx+3),
+					___
+				);
+				AddTerceto(
+					terceto,
+					NewOperator("="),
+					NewValue("@min"),
+					NewIndexRef(idIdx)
+				);
+				}
+			}
 		 ;
 
-eqop: EQUMIN {printf("EQUMIN ");}
-		| EQUMAX {printf("EQUMAX ");}
+eqop: EQUMIN {printf("EQUMIN "); isMax = false;}
+		| EQUMAX {printf("EQUMAX "); isMax = true;}
 		;
 
 sent: decl endstmt
@@ -290,8 +368,22 @@ lista_ids: CR_ABR ids CR_CRR {strcpy($$, $2);}
 		 ;
 
 
-ids: ID {strcpy($$, $1);}
-	 | ids COMA ID {strcpy($$, $1); strcat($$, ","); strcat($$, $3);}
+ids: ID {
+		strcpy($$, $1);
+		szLista = 1;
+		Clear(&eqStack);
+		const int i = AddTerceto(terceto, NewValue($1), ___, ___);
+		Push(&eqStack, i);
+		}
+	 | ids COMA ID {
+		strcpy($$, $1);
+		strcat($$, ",");
+		strcat($$, $3);
+		szLista++;
+
+		const int i = AddTerceto(terceto, NewValue($1), ___, ___);
+		Push(&eqStack, i);
+		}
 	 ;
 
 tipos: tipo {strcpy($$, $1);}
@@ -389,7 +481,12 @@ factor: PR_ABR expr PR_CRR {
 			printf("Expresion en parentesis ");
 			factorIdx = exprIdx;
 			}
-		| llong {printf("LONGITUD ");}
+		| llong {
+			printf("LONGITUD ");
+			char buf[100] = {0};
+			sprintf(buf, "%d", szLista);
+			factorIdx = AddTerceto(terceto, NewValue(buf), ___, ___);
+			}
 		| ID {
 				CheckId($1);
 				printf("ID ");
@@ -418,18 +515,34 @@ llong: LEN PR_ABR lista_ids PR_CRR
 lista_const: CR_ABR constantes CR_CRR
 					 ;
 
-constantes: constante
-					| constantes COMA constante
+constantes: constante {
+						szLista = 1;
+						Clear(&eqStack);
+						Push(&eqStack, constIdx);
+						}
+					| constantes COMA constante {
+						szLista++;
+						Push(&eqStack, constIdx);
+						}
 					;
 
-constante: const_num | str_const;
+constante: const_num { constIdx = constNumIdx; }
+				 | str_const { constIdx = strConstIdx; }
+				 ;
 
 /* =========================
  * IO
  * ========================= */
 
-iostmt: PRINT operando {printf("PRINT ");}
-			| GET ID {CheckId($2); printf("GET ");}
+iostmt: PRINT operando {
+			printf("PRINT ");
+			AddTerceto(terceto, NewOperator("PRINT"), NewIndexRef(operandoIdx), ___);
+			}
+			| GET ID {
+			CheckId($2);
+			printf("GET ");
+			AddTerceto(terceto, NewOperator("GET"), NewValue($2), ___);
+			}
 			;
 
 operando: expr {operandoIdx = exprIdx;}
@@ -441,8 +554,9 @@ operando: expr {operandoIdx = exprIdx;}
 int main(int argc, char *argv[]) {
 	sym_table = NewList();
 	terceto = NewTerceto();
-	tercetos = fopen("intermedio.txt", "wt");
+	tercetos = fopen("intermedio.txt", "wt+");
 	InitStack(&stack);
+	InitStack(&eqStack);
 
 	lexout = fopen("lex.out", "wt");
 	yyparse();
@@ -686,3 +800,4 @@ char *OperadorContrario(const char *op)
 
 	return ret;
 }
+

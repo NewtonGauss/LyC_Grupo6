@@ -22,3 +22,5 @@ bool Stack_IsEmpty(const Stack * const s)
 {
 	return s->idx == 0;
 }
+
+void Clear(Stack *s) { s->idx = 0; }

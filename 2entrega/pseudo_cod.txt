@@ -5,6 +5,8 @@ if entero != 1 {
 cmp | entero | 1
 beq | [i] | ___
 
+-----------------------------------------------
+
 if entero <= 1 && entero >= 0 {
 	...
 }
@@ -21,3 +23,41 @@ cmp | entero  | 1
 bgr | [i]     | ___
 cmp | entero  | 0
 ble | [i]     | ___
+
+-----------------------------------------------
+
+if entero <= 1 || entero >= 1 {
+
+}
+
+es lo mismo que
+
+cmp | entero | 1
+ble | [i]    | _
+cmp | entero | 1
+blq | [sig]  | _
+[i]: ...
+[sig]: ...
+
+-----------------------------------------------
+
+len([c, flotante]) es lo mismo que 2
+len(["hola", "que", "tal"]) es lo mismo que 3
+
+-----------------------------------------------
+
+if eqmin(5, [10, 5, 2]) {
+	...
+}
+
+@min = 10
+if @min > 5 {
+	@min = 5
+}
+if @min > 2 {
+	@min = 2
+}
+
+if @min == 5 {
+	...
+}
