@@ -4,6 +4,24 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define DATA_HEADER "include macros2.asm\n"\
+"include number.asm\n"\
+".MODEL LARGE\n"\
+".386\n"\
+".STACK 200h\n"\
+".DATA\n"
+
+#define CODE_HEADER ".CODE\n"\
+"start:\n"\
+"MOV EAX,@DATA\n"\
+"MOV DS,EAX\n"\
+"MOV ES,EAX\n"
+
+#define CODE_END "MOV EAX, 4c00h\n"\
+"INT 21h\n"\
+"END start;\n"
+
+static void assembleData(FILE *out, const List *symbols);
 static void assembleValues(FILE *out, const List *symbols, TercEntry e);
 static void assembleOperation(
 		FILE *out,
@@ -29,6 +47,10 @@ static int strequals(const char *const a, const char *const b)
 void GenerateAssembly(const List *symbols, Terceto t)
 {
 	FILE *out = fopen("Final.asm", "wt");
+
+	assembleData(out, symbols);
+	fprintf(out, "%s\n", CODE_HEADER);
+
 	const int sz = CurrentIndex(t)-1;
 	Stack stack;
 	InitStack(&stack);
@@ -45,6 +67,29 @@ void GenerateAssembly(const List *symbols, Terceto t)
 			assembleValues(out, symbols, e1);
 		}
 	}
+
+	fprintf(out, "%s\n", CODE_END);
+}
+
+static void assembleData(FILE *out, const List *symbols)
+{
+	fprintf(out, "%s\n", DATA_HEADER);
+	ListIterator it = Iterator(symbols);
+	while ( HasNext(&it) ) {
+		const Symbol s = Next(&it);
+		const int esConst = strlen(s.value) != 0;
+		if ( s.type == TABLE_INT || s.type == TABLE_REAL ) {
+			if ( esConst ) {
+				fprintf(out, "%s dd %s\n", s.name, s.value);
+			} else {
+				fprintf(out, "%s dd ?\n", s.name);
+			}
+		} else if ( s.type == TABLE_STRING ) {
+			fprintf(out, "%s db %s, '$', %ld dup (?)\n", s.name, s.value, s.len);
+		}
+	}
+	fprintf(out, "%s dd ?\n", "@aux");
+	fprintf(out, "\n");
 }
 
 static void assembleOperation(
@@ -116,6 +161,7 @@ static char *arithmeticOperation(const char *op)
 	if (strequals(op, "-")) return "FSUB";
 	if (strequals(op, "*")) return "FMUL";
 	if (strequals(op, "/")) return "FDIV";
+	return NULL;
 }
 
 static int isBranchOperator(const char *op)
@@ -138,6 +184,7 @@ static char *branchOperation(const char *op)
 	if (strequals(op, "BLE")) return "JNA";
 	if (strequals(op, "BLT")) return "JB";
 	if (strequals(op, "BRA")) return "JMP";
+	return NULL;
 }
 
 static void assemblePrint(FILE *out, const List *symbols, TercEntry e) {
@@ -149,13 +196,13 @@ static void assemblePrint(FILE *out, const List *symbols, TercEntry e) {
 		} else if ( s->type == TABLE_STRING ) {
 			fprintf(out, "displayString %s\n", s->name);
 		}
-		fprintf(out, "newline 1\n");
+		fprintf(out, "newLine 1\n");
 	} else if ( (s = Lookup(symbols, ConstantName((char*)e.data))) != NULL ) {
 		if ( s->type == TABLE_INT || s->type == TABLE_REAL ) {
 			fprintf(out, "displayFloat %s\n", s->name);
 		} else if ( s->type == TABLE_STRING ) {
 			fprintf(out, "displayString %s\n", s->name);
 		}
-		fprintf(out, "newline 1\n");
+		fprintf(out, "newLine 1\n");
 	}
 }

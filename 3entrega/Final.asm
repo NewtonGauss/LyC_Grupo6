@@ -1,3 +1,44 @@
+include macros2.asm
+include number.asm
+.MODEL LARGE
+.386
+.STACK 200h
+.DATA
+
+@min dd ?
+@minmax dd ?
+_.5 dd .5
+_0 dd 0
+_1 dd 1
+_10 dd 10
+_12 dd 12
+_12. dd 12.
+_12.5 dd 12.5
+_2 dd 2
+_5 dd 5
+_Mayor_a_1_o_Menor_a_0 db Mayor a 1 o Menor a 0, '$', 21 dup (?)
+_condicion_doble db condicion doble, '$', 15 dup (?)
+_condicion_doble_con_OR db condicion doble con OR, '$', 22 dup (?)
+_distinto_de_1 db distinto de 1, '$', 13 dup (?)
+_hasta_obtener_0 db hasta obtener 0, '$', 15 dup (?)
+_hola db hola, '$', 4 dup (?)
+_igual_a_1 db igual a 1, '$', 9 dup (?)
+_no_deberia_entrar db no deberia entrar, '$', 17 dup (?)
+_no_elegiste_1 db no elegiste 1, '$', 13 dup (?)
+_que db que, '$', 3 dup (?)
+_tal db tal, '$', 3 dup (?)
+_true db true, '$', 4 dup (?)
+c dd ?
+entero dd ?
+flotante dd ?
+@aux dd ?
+
+.CODE
+start:
+MOV EAX,@DATA
+MOV DS,EAX
+MOV ES,EAX
+
 FLD c
 FILD entero
 FILD entero
@@ -30,7 +71,7 @@ FDIV
 FSTP @aux
 FSTP entero
 displayFloat _1
-newline 1
+newLine 1
 FILD entero
 FILD _1
 FXCH
@@ -39,10 +80,10 @@ FSTSW AX
 SAHF
 JNE @et34
 displayFloat entero
-newline 1
+newLine 1
 JMP @et35
 displayString _distinto_de_1
-newline 1
+newLine 1
 @et35:
 FILD entero
 FILD _1
@@ -52,10 +93,10 @@ FSTSW AX
 SAHF
 JE @et41
 displayFloat flotante
-newline 1
+newLine 1
 JMP @et42
 displayString _igual_a_1
-newline 1
+newLine 1
 @et42:
 FILD entero
 FILD _1
@@ -72,10 +113,10 @@ FSTSW AX
 SAHF
 JB @et52
 displayString _condicion_doble
-newline 1
+newLine 1
 JMP @et53
 displayString _Mayor_a_1_o_Menor_a_0
-newline 1
+newLine 1
 @et53:
 FILD entero
 FILD _1
@@ -92,7 +133,7 @@ FSTSW AX
 SAHF
 JNA @et63
 displayString _condicion_doble_con_OR
-newline 1
+newLine 1
 @et62:
 @et63:
 FILD entero
@@ -111,14 +152,14 @@ FSTSW AX
 SAHF
 JNE @et74
 displayString _no_elegiste_1
-newline 1
+newLine 1
 JMP @et62
 @et74:
 FILD _1
 @et75:
 FSTP entero
 displayString _hasta_obtener_0
-newline 1
+newLine 1
 @et77:
 FILD entero
 FILD _0
@@ -142,7 +183,7 @@ JMP @et77
 @et91:
 FSTP entero
 displayFloat entero
-newline 1
+newLine 1
 FILD _10
 FILD _10
 FILD _5
@@ -167,7 +208,7 @@ FSTSW AX
 SAHF
 JNE @et111
 displayString _true
-newline 1
+newLine 1
 FILD _5
 @et111:
 FILD _10
@@ -193,7 +234,7 @@ FSTSW AX
 SAHF
 JNE @et125
 displayString _no_deberia_entrar
-newline 1
+newLine 1
 FILD _2
 @et125:
 FILD _10
@@ -219,7 +260,7 @@ FSTSW AX
 SAHF
 JNE @et139
 displayString _true
-newline 1
+newLine 1
 FILD _5
 @et139:
 FILD _10
@@ -245,4 +286,8 @@ FSTSW AX
 SAHF
 JNE @et153
 displayString _no_deberia_entrar
-newline 1
+newLine 1
+MOV EAX, 4c00h
+INT 21h
+END start;
+
