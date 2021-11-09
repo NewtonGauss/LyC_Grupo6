@@ -1,0 +1,27 @@
+                                  Nombre      Tipo                                   Valor  Longitud
+                                    @min      Real                                                 0
+                                 @minmax      Real                                                 0
+                                      _0   Integer                                       0         0
+                                      _1   Integer                                       1         0
+                                     _10   Integer                                      10         0
+                                     _12   Integer                                      12         0
+                                    _12_      Real                                     12.         0
+                                   _12_5      Real                                    12.5         0
+                                      _2   Integer                                       2         0
+                                      _5   Integer                                       5         0
+                  _Mayor_a_1_o_Menor_a_0    String                   Mayor a 1 o Menor a 0        21
+                                     __5      Real                                      .5         0
+                        _condicion_doble    String                         condicion doble        15
+                 _condicion_doble_con_OR    String                  condicion doble con OR        22
+                          _distinto_de_1    String                           distinto de 1        13
+                        _hasta_obtener_0    String                         hasta obtener 0        15
+                                   _hola    String                                    hola         4
+                              _igual_a_1    String                               igual a 1         9
+                      _no_deberia_entrar    String                       no deberia entrar        17
+                          _no_elegiste_1    String                           no elegiste 1        13
+                                    _que    String                                     que         3
+                                    _tal    String                                     tal         3
+                                   _true    String                                    true         4
+                                       c      Real                                                 0
+                                  entero   Integer                                                 0
+                                flotante      Real                                                 0

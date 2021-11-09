@@ -5,7 +5,5 @@ lex.out
 parser
 y.tab.h
 y.tab.c
-ts.txt
 *.o
 test
-intermedio.txt
