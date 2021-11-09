@@ -27,7 +27,7 @@ void AddString(const char *const val);
 void AddIds(const char *const ids, const char *const types);
 Symbol *Lookup(const List *const lst, const char *const name);
 void CheckId(const char *const id);
-char *constantName(const char *const val);
+void addId(const char *id, DataType type);
 
 
 /* Tercetos */
@@ -36,6 +36,12 @@ TercEntry NewOperator(char *const op);
 TercEntry NewValue(char *const value);
 TercEntry NewIndexRef(const int idx);
 TercEntry NewVoid(void);
+char *OperadorContrario(const char *op);
+static char ultimoOperador[10]={0};
+static bool huboAnd = false;
+
+/* Assembly */
+extern void GenerateAssembly(const List *symbols, Terceto t);
 
 Stack stack;
 
@@ -57,11 +63,6 @@ static int primerOperandoIdx;
 static int operandoIdx;
 static int branchIdx;
 static int constIdx;
-
-char *OperadorContrario(const char *op);
-void RevertirBranch(Terceto t, int i, char *op);
-static char ultimoOperador[10]={0};
-static bool huboAnd = false;
 
 /* para LEN */
 static int szLista = 0;
@@ -271,6 +272,7 @@ cond: NOT cond {printf("Negacion de condicion ");}
 				strcpy(ultimoOperador, $3);
 			}
 		| eqcond {
+			addId("@minmax", TABLE_REAL);
 			AddTerceto(
 				terceto,
 				NewOperator("cmp"),
@@ -291,6 +293,7 @@ oplog: EQ  {printf("EQ ") ; strcpy($$, "BNE"); /* paso el contrario */}
 
 eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR {
 			int idIdx = Pop(&eqStack);
+			addId("@minmax", TABLE_REAL);
 			AddTerceto(
 				terceto,
 				NewValue("="),
@@ -320,6 +323,7 @@ eqcond: eqop PR_ABR expr COMA lista_ids PR_CRR {
 				}
 			}
 			| eqop PR_ABR expr COMA lista_const PR_CRR {
+			addId("@min", TABLE_REAL);
 			int idIdx = Pop(&eqStack);
 			AddTerceto(
 				terceto,
@@ -428,7 +432,7 @@ right: expr { rightIdx = exprIdx; }
 str_const: STR {
 				 printf("CONST_STR ");
 				 AddString($1);
-				 strConstIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
+				 strConstIdx = AddTerceto(terceto, NewValue(ConstantName($1)), ___, ___);
 				 }
 	 ;
 
@@ -501,12 +505,12 @@ factor: PR_ABR expr PR_CRR {
 const_num: CONST_R {
 				 printf("CONST_R ");
 				 AddReal($1);
-				 constNumIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
+				 constNumIdx = AddTerceto(terceto, NewValue(ConstantName($1)), ___, ___);
 				 }
 		| CONST_INT {
 				printf("CONST_INT ");
 				AddInteger($1);
-				constNumIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
+				constNumIdx = AddTerceto(terceto, NewValue(ConstantName($1)), ___, ___);
 				}
 		;
 
@@ -603,6 +607,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	fflush(NULL);
+
+	GenerateAssembly(&sym_table, terceto);
 }
 
 /**
@@ -636,7 +642,7 @@ void yyerror(char *fmt, ...) {
 void doAddConstant(const char *const val, DataType type)
 {
 	Symbol s;
-	strcpy(s.name, constantName(val));
+	strcpy(s.name, ConstantName(val));
 	s.type = type;
 	strcpy(s.value, val);
 	if ( type == TABLE_STRING )
@@ -644,18 +650,6 @@ void doAddConstant(const char *const val, DataType type)
 	else
 		s.len = 0;
 	AddSymbol(&sym_table, &s);
-}
-
-char *constantName(const char *const val)
-{
-	static char buf[SYM_NAME_SZ+1];
-	strcpy(buf, "_");
-	strcat(buf, val);
-	char *ptr;
-	while ( (ptr = strchr(buf, ' ')) != NULL ) {
-		*ptr = '_';
-	}
-	return buf;
 }
 
 void AddInteger(const char *const val)
@@ -750,24 +744,6 @@ void CheckId(const char *const id)
 	}
 }
 
-/**
- * Realiza una busqueda en la lista por name del Symbol
- * En caso de no encontrarlo, retorna NULL.
- * El puntero retornado es una variable static, por lo tanto, no deberia ser
- * utilizado luego de otra llamada a Lookup, dado que su valor puede cambiar.
- */
-Symbol *Lookup(const List *const lst, const char *const name)
-{
-	ListIterator it = Iterator(lst);
-	while ( HasNext(&it) ) {
-		static Symbol s;
-		s = Next(&it);
-		if ( strcmp(s.name, name) == 0 )
-			return &s;
-	}
-
-	return NULL;
-}
 
 TercEntry NewOperator(char *const op)
 {

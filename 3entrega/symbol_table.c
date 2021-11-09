@@ -66,4 +66,34 @@ Symbol Next(ListIterator *it)
 	return sym;
 }
 
+/**
+ * Realiza una busqueda en la lista por name del Symbol
+ * En caso de no encontrarlo, retorna NULL.
+ * El puntero retornado es una variable static, por lo tanto, no deberia ser
+ * utilizado luego de otra llamada a Lookup, dado que su valor puede cambiar.
+ */
+Symbol *Lookup(const List *const lst, const char *const name)
+{
+	ListIterator it = Iterator(lst);
+	while ( HasNext(&it) ) {
+		static Symbol s;
+		s = Next(&it);
+		if ( strcmp(s.name, name) == 0 )
+			return &s;
+	}
+
+	return NULL;
+}
+
+char *ConstantName(const char *const val)
+{
+	static char buf[SYM_NAME_SZ+1];
+	strcpy(buf, "_");
+	strcat(buf, val);
+	char *ptr;
+	while ( (ptr = strchr(buf, ' ')) != NULL ) {
+		*ptr = '_';
+	}
+	return buf;
+}
 

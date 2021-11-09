@@ -39,4 +39,7 @@ ListIterator Iterator(const List * const lst);
 bool HasNext(ListIterator *it);
 Symbol Next(ListIterator *it);
 
+Symbol *Lookup(const List *const lst, const char *const name);
+char *ConstantName(const char *const val);
+
 #endif
