@@ -15,10 +15,11 @@ stack.o: stack.c stack.h
 .PHONY: clean
 
 clean:
-	rm lex.yy.c parser y.tab.c y.tab.h symbol.o lex.out tercetos.o
+	rm lex.yy.c parser y.tab.c y.tab.h symbol.o lex.out tercetos.o stack.o
 
 .PHONY: test_sym
 
 test_sym: symbol.o
 	gcc -g -o test symbol_table_test.c symbol.o
 	./test
+

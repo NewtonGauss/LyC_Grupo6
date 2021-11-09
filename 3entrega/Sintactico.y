@@ -16,6 +16,7 @@ void yyerror(char *s, ...);
 int yylex(void);
 
 extern int yylineno;
+extern FILE *yyin;
 FILE *lexout;
 
 /* Tabla de simbolos */
@@ -557,6 +558,13 @@ int main(int argc, char *argv[]) {
 	tercetos = fopen("intermedio.txt", "wt+");
 	InitStack(&stack);
 	InitStack(&eqStack);
+
+	if ( argc > 1 ) {
+		FILE *f = fopen(argv[1], "rt");
+		yyin = f != NULL ? f : stdin;
+	} else {
+		yyin = stdin;
+	}
 
 	lexout = fopen("lex.out", "wt");
 	yyparse();
