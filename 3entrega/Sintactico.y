@@ -27,12 +27,13 @@ void AddString(const char *const val);
 void AddIds(const char *const ids, const char *const types);
 Symbol *Lookup(const List *const lst, const char *const name);
 void CheckId(const char *const id);
+char *constantName(const char *const val);
+
 
 /* Tercetos */
 Terceto terceto;
-FILE* tercetos;
-TercEntry NewOperator(const char *const op);
-TercEntry NewValue(const char *const value);
+TercEntry NewOperator(char *const op);
+TercEntry NewValue(char *const value);
 TercEntry NewIndexRef(const int idx);
 TercEntry NewVoid(void);
 
@@ -147,12 +148,12 @@ bloq: flowcontr
 flowcontr: IF conds LL_ABR bloq LL_CRR {
 					if ( !Stack_IsEmpty(&stack) ) {
 						const int branch = Pop(&stack);
-						FillVoid(terceto, branch, CurrentIndex());
+						FillVoid(terceto, branch, CurrentIndex(terceto));
 					}
 					if ( huboAnd ) {
 						if ( !Stack_IsEmpty(&stack) ) {
 							const int branch = Pop(&stack);
-							FillVoid(terceto, branch, CurrentIndex());
+							FillVoid(terceto, branch, CurrentIndex(terceto));
 							}
 						huboAnd = false;
 						}
@@ -167,19 +168,19 @@ flowcontr: IF conds LL_ABR bloq LL_CRR {
 					printf("IF CON ELSE ");
 					if ( !Stack_IsEmpty(&stack) ) {
 						const int branch = Pop(&stack);
-						FillVoid(terceto, branch, CurrentIndex());
+						FillVoid(terceto, branch, CurrentIndex(terceto));
 					}
 				 }
 				 | IF conds LL_ABR bloq LL_CRR {
 					printf("IF SIMPLE ");
 					if ( !Stack_IsEmpty(&stack) ) {
 						const int branch = Pop(&stack);
-						FillVoid(terceto, branch, CurrentIndex());
+						FillVoid(terceto, branch, CurrentIndex(terceto));
 					}
 					if ( huboAnd ) {
 						if ( !Stack_IsEmpty(&stack) ) {
 							const int branch = Pop(&stack);
-							FillVoid(terceto, branch, CurrentIndex());
+							FillVoid(terceto, branch, CurrentIndex(terceto));
 						}
 						huboAnd = false;
 						}
@@ -190,7 +191,7 @@ flowcontr: IF conds LL_ABR bloq LL_CRR {
 					} conds LL_ABR bloq LL_CRR {
 					printf("WHILE ");
 					const int branchAfuera = Pop(&stack);
-					FillVoid(terceto, branchAfuera, CurrentIndex()+1);
+					FillVoid(terceto, branchAfuera, CurrentIndex(terceto)+1);
 
 					const int branchHaciaWhile = Pop(&stack);
 					AddTerceto(
@@ -225,7 +226,7 @@ conds: cond {
 				printf("Condicion multiple ");
 				const int branch = Pop(&stack);
 				/* estoy parado en el branch, +1 es donde sigue */
-				FillVoid(terceto, branch, CurrentIndex()+1);
+				FillVoid(terceto, branch, CurrentIndex(terceto)+1);
 
 				/* branch */
 				const int i = AddTerceto(
@@ -427,7 +428,7 @@ right: expr { rightIdx = exprIdx; }
 str_const: STR {
 				 printf("CONST_STR ");
 				 AddString($1);
-				 strConstIdx = AddTerceto(terceto, NewValue($1), ___, ___);
+				 strConstIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
 				 }
 	 ;
 
@@ -500,12 +501,12 @@ factor: PR_ABR expr PR_CRR {
 const_num: CONST_R {
 				 printf("CONST_R ");
 				 AddReal($1);
-				 constNumIdx = AddTerceto(terceto, NewValue($1), ___, ___);
+				 constNumIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
 				 }
 		| CONST_INT {
 				printf("CONST_INT ");
 				AddInteger($1);
-				constNumIdx = AddTerceto(terceto, NewValue($1), ___, ___);
+				constNumIdx = AddTerceto(terceto, NewValue(constantName($1)), ___, ___);
 				}
 		;
 
@@ -555,7 +556,6 @@ operando: expr {operandoIdx = exprIdx;}
 int main(int argc, char *argv[]) {
 	sym_table = NewList();
 	terceto = NewTerceto();
-	tercetos = fopen("intermedio.txt", "wt+");
 	InitStack(&stack);
 	InitStack(&eqStack);
 
@@ -594,6 +594,14 @@ int main(int argc, char *argv[]) {
 		fprintf(tstxt, "%40s%10s%40s%10d\n", sym.name, type, sym.value, sym.len);
 	}
 
+	/* Guardo los tercetos */
+	FILE *tercetos = fopen("intermedio.txt", "wt");
+	int sz = CurrentIndex(terceto);
+	for ( int i = 0; i < sz; ++i ) {
+		char *str = Printable(terceto, i);
+		fputs(str, tercetos);
+	}
+
 	fflush(NULL);
 }
 
@@ -628,12 +636,26 @@ void yyerror(char *fmt, ...) {
 void doAddConstant(const char *const val, DataType type)
 {
 	Symbol s;
-	strcpy(s.name, "_");
-	strcat(s.name, val);
+	strcpy(s.name, constantName(val));
 	s.type = type;
 	strcpy(s.value, val);
-	s.len = 0;
+	if ( type == TABLE_STRING )
+		s.len = strlen(val);
+	else
+		s.len = 0;
 	AddSymbol(&sym_table, &s);
+}
+
+char *constantName(const char *const val)
+{
+	static char buf[SYM_NAME_SZ+1];
+	strcpy(buf, "_");
+	strcat(buf, val);
+	char *ptr;
+	while ( (ptr = strchr(buf, ' ')) != NULL ) {
+		*ptr = '_';
+	}
+	return buf;
 }
 
 void AddInteger(const char *const val)
@@ -747,18 +769,30 @@ Symbol *Lookup(const List *const lst, const char *const name)
 	return NULL;
 }
 
-TercEntry NewOperator(const char *const op)
+TercEntry NewOperator(char *const op)
 {
+	char *opMalloced = malloc(strlen(op)+1);
+	if ( opMalloced == NULL ) {
+		fprintf(stderr, "error malloc NewOperator\n");
+		exit(1);
+	}
+	strcpy(opMalloced, op);
 	return (TercEntry){
-		.data = op,
+		.data = opMalloced,
 		.type = TERC_OP
 	};
 }
 
-TercEntry NewValue(const char *const value)
+TercEntry NewValue(char *const value)
 {
+	char *valMalloced = malloc(strlen(value)+1);
+	if ( valMalloced == NULL ) {
+		fprintf(stderr, "error malloc NewValue\n");
+		exit(1);
+	}
+	strcpy(valMalloced, value);
 	return (TercEntry){
-		.data = value,
+		.data = valMalloced,
 		.type = TERC_VAL
 	};
 }

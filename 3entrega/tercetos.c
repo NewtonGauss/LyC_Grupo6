@@ -2,77 +2,65 @@
 #include <string.h>
 #include <stdlib.h>
 
-static int _idx_terceto = 0;
-
 Terceto NewTerceto(void)
 {
-	return NULL;  /* por compatibilidad con el futuro */
+	Terceto t = malloc(sizeof(_terceto));
+	return t;
 }
 
 int AddTerceto(Terceto t, TercEntry e1, TercEntry e2, TercEntry e3)
 {
-# define STRB_SZ 2048
-	char strb[STRB_SZ+1] = {0};
-	TercEntry entries[3] = {e1, e2, e3};
-
-	int written = 0;
-
-	/* formato idx: |x|y|w|\n */
-	written = sprintf(strb, "%d: ", _idx_terceto);
-	strcat(strb, "|");
-	char *ptr = strb + written + 1;
-	for ( register int i = 0; i < 3; ++i ) {
-		switch ( entries[i].type ) {
-		case TERC_IDX:
-			written = sprintf(ptr, "[%d]", *(int*)entries[i].data);
-			break;
-		case TERC_OP:
-			written = sprintf(ptr, "%s", (char*)entries[i].data);
-			break;
-		case TERC_VAL:
-			written = sprintf(ptr, "%s", (char*)entries[i].data);
-			break;
-		case TERC_VOID:
-			if ( _idx_terceto <= 10 )
-				written = sprintf(ptr, "___");
-			else if ( _idx_terceto <= 100 )
-				written = sprintf(ptr, "____");
-			else if ( _idx_terceto <= 1000 )
-				written = sprintf(ptr, "_____");
-			else
-				written = sprintf(ptr, "______");
-			break;
-		default:
-			fprintf(stderr, "error, tipo de terceto inesperado\n");
-			exit(1);
-		}
-		strcat(strb, "|");
-		ptr += written + 1;
-	}
-	fprintf(tercetos, "%s\n", strb);
-
-	return _idx_terceto++;
+	TercEntries entries = (TercEntries) {
+		.first = e1, .second = e2, .third = e3
+	};
+	t->entries[t->current++] = entries;
+	return t->current;
 }
 
 void FillVoid(Terceto t, int idxToFill, int branchIdx) {
-	rewind(tercetos);
-	char buf[257];
-	while ( idxToFill >= 0 && fgets(buf, 256, tercetos) != NULL ) {
-		idxToFill--;
-	}
-	const size_t sz = strlen(buf);
-	/* Vuelvo al inicio del registro */
-	fseek(tercetos, sz * -1, SEEK_CUR);
-
-	/* hago el masajeo de buf: agrero el idx donde corresponde */
-	/* un registro es %d: |%s|%s|%s| */
-	/* quiero cambiar la segunda cadena */
-	char *ptr = strchr(buf, '|');
-	ptr = strchr(ptr+1, '|'); // busco el segundo |
-	sprintf(ptr+1, "[%d]", branchIdx);
-	fprintf(tercetos, "%s", buf);
-
-	fseek(tercetos, 0, SEEK_END);
+	int *filler = malloc(sizeof(int));
+	*filler = branchIdx;
+	t->entries[idxToFill].second.data = (void*)filler;
 }
 
-int CurrentIndex(void) { return _idx_terceto; }
+int CurrentIndex(Terceto t) { return t->current; }
+
+static void _print_entry(char *buf, TercEntry entry);
+
+char *Printable(Terceto t, int idx)
+{
+# define BUF_SZ 1024
+	static char buf[BUF_SZ+1];
+
+	char e1[100];
+	_print_entry(e1, t->entries[idx].first);
+
+	char e2[100];
+	_print_entry(e2, t->entries[idx].second);
+
+	char e3[100];
+	_print_entry(e3, t->entries[idx].third);
+
+	int n = sprintf(buf, "%d: |%s|%s|%s|\n", idx, e1, e2, e3);
+	buf[n] = 0;
+
+	return buf;
+}
+
+static void _print_entry(char *buf, TercEntry entry) {
+	switch ( entry.type ) {
+	case TERC_IDX:
+		sprintf(buf, "[%d]", *(int*)entry.data);
+		break;
+	case TERC_OP:
+	case TERC_VAL:
+		sprintf(buf, "%s", (char*)entry.data);
+		break;
+	case TERC_VOID:
+		sprintf(buf, "___");
+		break;
+	default:
+		fprintf(stderr, "error, tipo de terceto inesperado");
+		exit(1);
+	}
+}

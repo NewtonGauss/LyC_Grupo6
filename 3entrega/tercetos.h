@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 
-typedef void* Terceto;
-
 typedef enum {
 	TERC_IDX, /* indice que representa el terceto a referenciar */
 	TERC_OP, /* srting que representa el operador a poner */
@@ -14,16 +12,28 @@ typedef enum {
 } TercType;
 
 typedef struct {
-	const void *const data; /* TODO: cambiar por un union type */
+	void *data; /* TODO: cambiar por un union type */
 	TercType type;
 } TercEntry;
 
-/** archivo temporal donde se guardan los tercetos */
-extern FILE* tercetos;
+typedef struct {
+	TercEntry first,
+						second,
+						third;
+} TercEntries;
+
+#define LIST_SZ 1024
+typedef struct {
+	TercEntries entries[LIST_SZ];
+	int current;
+} _terceto;
+
+typedef _terceto* Terceto;
 
 Terceto NewTerceto(void);
 int AddTerceto(Terceto t, TercEntry e1, TercEntry e2, TercEntry e3);
 void FillVoid(Terceto t, int idxToFill, int branchIdx);
-int CurrentIndex(void);
+int CurrentIndex(Terceto t);
+char *Printable(Terceto t, int idx);
 
 #endif
