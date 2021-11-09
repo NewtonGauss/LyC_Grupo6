@@ -2,8 +2,7 @@
 
 */ declaracion de variables /*
 var [ c ] as [ real ]
-var [ str, entero, flotante ] as [ string, int, real ]
-var [str2] as [string]
+var [ entero, flotante ] as [ int, real ]
 
 */ asignacion de entero /*
 entero = 12
@@ -13,16 +12,13 @@ flotante = 12.
 c = .5
 c = 12.5
 
-*/ asignacion de cadenas /*
-str = ""
-str2 = "Hello, World!"
-
 */ operaciones /*
 entero = entero + 1
 entero = entero - 1
 entero = entero * 2
 entero = entero / 2
-entero = entero + 1*2 - 4/2
+
+print 1
 
 */ selecciones /*
 if entero == 1 {
@@ -40,15 +36,13 @@ if entero != 1 {
 }
 
 if entero <= 1 && entero >= 0 {
-	*/ impresion de cadena /*
-	print str2
+	print "condicion doble"
 } else {
 	print "Mayor a 1 o Menor a 0"
 }
 
 if entero < 1 || entero > 0 {
-	*/ impresion de operacion /*
-	print entero + 1
+	print "condicion doble con OR"
 }
 
 */ ciclo while /*
@@ -65,6 +59,7 @@ while entero != 0 {
 entero = 1
 
 */ ciclos anidados /*
+print "hasta obtener 0"
 while entero != 0 {
 	while entero != 0 {
 		get entero
@@ -74,7 +69,7 @@ while entero != 0 {
 */ Temas especiales /*
 */ Longitud de lista /*
 entero = len(["hola", "que", "tal"]) */ 3 /*
-print len([c, flotante])
+print entero
 
 */ EQUMAX /*
 if eqmax(10, [10, 5, 2]) {

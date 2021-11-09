@@ -169,7 +169,7 @@ flowcontr: IF conds LL_ABR bloq LL_CRR {
 					printf("IF CON ELSE ");
 					if ( !Stack_IsEmpty(&stack) ) {
 						const int branch = Pop(&stack);
-						FillVoid(terceto, branch, CurrentIndex(terceto));
+						FillVoid(terceto, branch, CurrentIndex(terceto)-1);
 					}
 				 }
 				 | IF conds LL_ABR bloq LL_CRR {
@@ -540,9 +540,25 @@ constante: const_num { constIdx = constNumIdx; }
  * IO
  * ========================= */
 
-iostmt: PRINT operando {
-			printf("PRINT ");
-			AddTerceto(terceto, NewOperator("PRINT"), NewIndexRef(operandoIdx), ___);
+iostmt: PRINT STR {
+			printf("PRINT STR ");
+			AddString($2);
+			AddTerceto(terceto, NewOperator("PRINT"), NewValue(ConstantName($2)), ___);
+			}
+			| PRINT ID {
+			CheckId($2);
+			printf("PRINT ID ");
+			AddTerceto(terceto, NewOperator("PRINT"), NewValue($2), ___);
+			}
+			| PRINT CONST_R {
+			printf("PRINT CONST_R ");
+			AddReal($2);
+			AddTerceto(terceto, NewOperator("PRINT"), NewValue(ConstantName($2)), ___);
+			}
+			| PRINT CONST_INT {
+			printf("PRINT CONST_I ");
+			AddInteger($2);
+			AddTerceto(terceto, NewOperator("PRINT"), NewValue(ConstantName($2)), ___);
 			}
 			| GET ID {
 			CheckId($2);
@@ -600,7 +616,7 @@ int main(int argc, char *argv[]) {
 
 	/* Guardo los tercetos */
 	FILE *tercetos = fopen("intermedio.txt", "wt");
-	int sz = CurrentIndex(terceto);
+	int sz = CurrentIndex(terceto)-1;
 	for ( int i = 0; i < sz; ++i ) {
 		char *str = Printable(terceto, i);
 		fputs(str, tercetos);

@@ -15,5 +15,6 @@ void Push(Stack *s, const int d);
 int Pop(Stack *s);
 bool Stack_IsEmpty(const Stack * const s);
 void Clear(Stack *s);
+int Peek(const Stack *const s);
 
 #endif

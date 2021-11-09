@@ -18,6 +18,8 @@ int Pop(Stack *s)
 	return popped;
 }
 
+int Peek(const Stack *const s) { return s->data[s->idx-1]; }
+
 bool Stack_IsEmpty(const Stack * const s)
 {
 	return s->idx == 0;

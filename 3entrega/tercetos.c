@@ -14,16 +14,17 @@ int AddTerceto(Terceto t, TercEntry e1, TercEntry e2, TercEntry e3)
 		.first = e1, .second = e2, .third = e3
 	};
 	t->entries[t->current++] = entries;
-	return t->current;
+	return t->current-1;
 }
 
 void FillVoid(Terceto t, int idxToFill, int branchIdx) {
 	int *filler = malloc(sizeof(int));
 	*filler = branchIdx;
 	t->entries[idxToFill].second.data = (void*)filler;
+	t->entries[idxToFill].second.type = TERC_IDX;
 }
 
-int CurrentIndex(Terceto t) { return t->current; }
+int CurrentIndex(Terceto t) { return t->current+1; }
 
 static void _print_entry(char *buf, TercEntry entry);
 

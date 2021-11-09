@@ -89,11 +89,21 @@ char *ConstantName(const char *const val)
 {
 	static char buf[SYM_NAME_SZ+1];
 	strcpy(buf, "_");
-	strcat(buf, val);
+
+	if ( val[0] == '"' )
+		strcat(buf, val+1);
+	else
+		strcat(buf, val);
+
 	char *ptr;
 	while ( (ptr = strchr(buf, ' ')) != NULL ) {
 		*ptr = '_';
 	}
+
+	const size_t len = strlen(buf);
+	if ( len > 0 && buf[len-1] == '"' )
+		buf[len-1] = 0;
+
 	return buf;
 }
 
