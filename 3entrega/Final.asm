@@ -9,21 +9,29 @@ FLD _12.5
 FSTP c
 FILD entero
 FILD _1
+FADD
 FSTP entero
 FILD entero
 FILD _1
+FSUB
 FSTP entero
 FILD entero
 FILD _2
+FMUL
 FSTP entero
 FILD entero
 FILD _2
+FDIV
 FSTP entero
 FILD entero
 FILD _1
 FILD _2
+FMUL
+FADD
 FILD _4
 FILD _2
+FDIV
+FSUB
 FSTP entero
 FILD entero
 FILD _1
@@ -41,6 +49,7 @@ FILD entero
 FILD _0
 FILD entero
 FILD _1
+FADD
 FILD entero
 FILD _0
 FILD entero
