@@ -104,6 +104,10 @@ char *ConstantName(const char *const val)
 	if ( len > 0 && buf[len-1] == '"' )
 		buf[len-1] = 0;
 
+	while ( (ptr = strchr(buf, '.')) != NULL ) {
+		*ptr = '_';
+	}
+
 	return buf;
 }
 

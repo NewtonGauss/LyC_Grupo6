@@ -52,12 +52,22 @@ void GenerateAssembly(const List *symbols, Terceto t)
 	fprintf(out, "%s\n", CODE_HEADER);
 
 	const int sz = CurrentIndex(t)-1;
-	Stack stack;
+	Stack stack, unroll;
 	InitStack(&stack);
+	InitStack(&unroll);
 	for ( register int i = 0; i < sz; i++ ) {
-		if ( !Stack_IsEmpty(&stack) && Peek(&stack) == i ) {
-			Pop(&stack);
-			fprintf(out, "@et%d:\n", i);
+		if ( !Stack_IsEmpty(&stack) ) {
+			int top;
+			while ( !Stack_IsEmpty(&stack) && (top=Peek(&stack)) != i )
+				Push(&unroll, Pop(&stack));
+			if ( top == i ) {
+				fprintf(out, "@et%d:\n", i);
+				Pop(&stack);
+				while ( !Stack_IsEmpty(&stack) && (top=Peek(&stack)) == i )
+					Pop(&stack);
+			}
+			while ( !Stack_IsEmpty(&unroll) )
+				Push(&stack, Pop(&unroll));
 		}
 		TercEntries terceto = t->entries[i];
 		TercEntry e1 = terceto.first, e2 = terceto.second, e3 = terceto.third;
@@ -65,6 +75,14 @@ void GenerateAssembly(const List *symbols, Terceto t)
 			assembleOperation(out, symbols, &stack, i, t, e1, e2, e3);
 		} else if ( e1.type == TERC_VAL ) {
 			assembleValues(out, symbols, e1);
+		}
+	}
+
+	if ( !Stack_IsEmpty(&stack) ) {
+		int top;
+		while ( !Stack_IsEmpty(&stack)) {
+			top=Pop(&stack);
+			fprintf(out, "@et%d:\n", top);
 		}
 	}
 
@@ -85,7 +103,7 @@ static void assembleData(FILE *out, const List *symbols)
 				fprintf(out, "%s dd ?\n", s.name);
 			}
 		} else if ( s.type == TABLE_STRING ) {
-			fprintf(out, "%s db %s, '$', %ld dup (?)\n", s.name, s.value, s.len);
+			fprintf(out, "%s db \"%s\", '$', %ld dup (?)\n", s.name, s.value, s.len);
 		}
 	}
 	fprintf(out, "%s dd ?\n", "@aux");
@@ -192,14 +210,14 @@ static void assemblePrint(FILE *out, const List *symbols, TercEntry e) {
 	if ( (s = Lookup(symbols, (char*)e.data)) != NULL ) {
 		/* es un id */
 		if ( s->type == TABLE_INT || s->type == TABLE_REAL ) {
-			fprintf(out, "displayFloat %s\n", s->name);
+			fprintf(out, "DisplayFloat %s, 2\n", s->name);
 		} else if ( s->type == TABLE_STRING ) {
 			fprintf(out, "displayString %s\n", s->name);
 		}
 		fprintf(out, "newLine 1\n");
 	} else if ( (s = Lookup(symbols, ConstantName((char*)e.data))) != NULL ) {
 		if ( s->type == TABLE_INT || s->type == TABLE_REAL ) {
-			fprintf(out, "displayFloat %s\n", s->name);
+			fprintf(out, "DisplayFloat %s, 2\n", s->name);
 		} else if ( s->type == TABLE_STRING ) {
 			fprintf(out, "displayString %s\n", s->name);
 		}
