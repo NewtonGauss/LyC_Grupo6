@@ -7,27 +7,27 @@ include number.asm
 
 @min dd ?
 @minmax dd ?
-_.5 dd .5
 _0 dd 0
 _1 dd 1
 _10 dd 10
 _12 dd 12
-_12. dd 12.
-_12.5 dd 12.5
+_12_ dd 12.
+_12_5 dd 12.5
 _2 dd 2
 _5 dd 5
-_Mayor_a_1_o_Menor_a_0 db Mayor a 1 o Menor a 0, '$', 21 dup (?)
-_condicion_doble db condicion doble, '$', 15 dup (?)
-_condicion_doble_con_OR db condicion doble con OR, '$', 22 dup (?)
-_distinto_de_1 db distinto de 1, '$', 13 dup (?)
-_hasta_obtener_0 db hasta obtener 0, '$', 15 dup (?)
-_hola db hola, '$', 4 dup (?)
-_igual_a_1 db igual a 1, '$', 9 dup (?)
-_no_deberia_entrar db no deberia entrar, '$', 17 dup (?)
-_no_elegiste_1 db no elegiste 1, '$', 13 dup (?)
-_que db que, '$', 3 dup (?)
-_tal db tal, '$', 3 dup (?)
-_true db true, '$', 4 dup (?)
+_Mayor_a_1_o_Menor_a_0 db "Mayor a 1 o Menor a 0", '$', 21 dup (?)
+__5 dd .5
+_condicion_doble db "condicion doble", '$', 15 dup (?)
+_condicion_doble_con_OR db "condicion doble con OR", '$', 22 dup (?)
+_distinto_de_1 db "distinto de 1", '$', 13 dup (?)
+_hasta_obtener_0 db "hasta obtener 0", '$', 15 dup (?)
+_hola db "hola", '$', 4 dup (?)
+_igual_a_1 db "igual a 1", '$', 9 dup (?)
+_no_deberia_entrar db "no deberia entrar", '$', 17 dup (?)
+_no_elegiste_1 db "no elegiste 1", '$', 13 dup (?)
+_que db "que", '$', 3 dup (?)
+_tal db "tal", '$', 3 dup (?)
+_true db "true", '$', 4 dup (?)
 c dd ?
 entero dd ?
 flotante dd ?
@@ -44,11 +44,11 @@ FILD entero
 FILD entero
 FILD _12
 FSTP entero
-FLD _12.
+FLD _12_
 FSTP flotante
-FLD _.5
+FLD __5
 FSTP c
-FLD _12.5
+FLD _12_5
 FSTP c
 FILD entero
 FILD _1
@@ -70,7 +70,7 @@ FILD _2
 FDIV
 FSTP @aux
 FSTP entero
-displayFloat _1
+DisplayFloat _1, 2
 newLine 1
 FILD entero
 FILD _1
@@ -79,9 +79,10 @@ FCOM
 FSTSW AX
 SAHF
 JNE @et34
-displayFloat entero
+DisplayFloat entero, 2
 newLine 1
 JMP @et35
+@et34:
 displayString _distinto_de_1
 newLine 1
 @et35:
@@ -92,9 +93,10 @@ FCOM
 FSTSW AX
 SAHF
 JE @et41
-displayFloat flotante
+DisplayFloat flotante, 2
 newLine 1
 JMP @et42
+@et41:
 displayString _igual_a_1
 newLine 1
 @et42:
@@ -115,6 +117,7 @@ JB @et52
 displayString _condicion_doble
 newLine 1
 JMP @et53
+@et52:
 displayString _Mayor_a_1_o_Menor_a_0
 newLine 1
 @et53:
@@ -134,6 +137,7 @@ SAHF
 JNA @et63
 displayString _condicion_doble_con_OR
 newLine 1
+@et62:
 @et62:
 @et63:
 FILD entero
@@ -182,7 +186,7 @@ JMP @et77
 @et90:
 @et91:
 FSTP entero
-displayFloat entero
+DisplayFloat entero, 2
 newLine 1
 FILD _10
 FILD _10
@@ -287,6 +291,7 @@ SAHF
 JNE @et153
 displayString _no_deberia_entrar
 newLine 1
+@et153:
 MOV EAX, 4c00h
 INT 21h
 END start;
